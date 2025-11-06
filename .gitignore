@@ -1,0 +1,6 @@
+node_modules/
+artifacts/
+.cache/
+remix_accounts/
+.env
+*.zip
