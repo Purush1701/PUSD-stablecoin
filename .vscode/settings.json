@@ -12,15 +12,24 @@
     "**/node_modules": true,
     "artifacts/build-info": true
   },
+  // Solidity Settings
   "solidity.compileUsingRemoteVersion": "v0.8.20",
   "solidity.formatter": "prettier",
+  "solidity.defaultCompiler": "localNodeModule",
+  "solidity.packageDefaultDependenciesContractsDirectory": "",
+  "solidity.packageDefaultDependenciesDirectory": "node_modules",
   "[solidity]": {
-    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
