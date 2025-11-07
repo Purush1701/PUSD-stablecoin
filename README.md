@@ -1,29 +1,31 @@
 # 💵 PUSD — Pegged USD Stablecoin
 
-> **PUSD v1: Live on Sepolia with Uniswap pool**
+> **PUSD v2: Live on Sepolia with Uniswap pool, MInt, Redeem**
 
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.26-363636?logo=solidity)](https://soliditylang.org/)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-5.0-4E5EE4?logo=openzeppelin)](https://openzeppelin.com/)
 [![Network](https://img.shields.io/badge/Network-Sepolia-yellow)](https://sepolia.etherscan.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A production-grade ERC-20 stablecoin deployed on Ethereum Sepolia testnet with full Uniswap V4 integration. Built as a progressive learning journey from zero to a fully functional DeFi protocol.
+A production-grade ERC-20 stablecoin on Ethereum Sepolia with Uniswap integration and redeem functionality. Progressive journey from basic token (v1) to advanced DeFi features (v2).
 
 ---
 
-## 🚀 Live Deployment
+## 🚀 Live Deployments
 
-**Contract Address**: [`0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc)
+**PUSD v1**: [`0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc)  
+**PUSD v2**: [`0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622) ⭐
 
 **Network**: Ethereum Sepolia Testnet  
-**Total Supply**: 1,000,000 PUSD  
-**Uniswap Pool**: PUSD/ETH Liquidity Pool Active ✅
+**Total Supply**: 1,000,000 PUSD each  
+**Uniswap Pool**: v1 PUSD/ETH Active ✅
 
 ---
 
 ## 📋 Features
 
-### ✅ Version 1 (Current - LIVE)
+### ✅ Version 1 (LIVE)
+
 - **ERC-20 Standard**: Full compliance with OpenZeppelin implementation
 - **1M Token Supply**: Initial minting with controlled supply
 - **Uniswap V4 Integration**: Active trading pool on Sepolia
@@ -33,12 +35,16 @@ A production-grade ERC-20 stablecoin deployed on Ethereum Sepolia testnet with f
   - ✓ Add/remove liquidity
   - ✓ Transfer PUSD between wallets
 
-### 🔄 Version 2 (In Development)
-- `redeem()` function with token burn mechanism
-- Event emission for transparency
-- Enhanced user controls
+### ✅ Version 2 (Current - LIVE)
+
+- **Redeem Function**: Burn PUSD tokens with `redeem()`
+- **Multi-Currency Support**: USD, EUR, GBP, etc.
+- **Event Emission**: `Redeemed` event for off-chain tracking
+- **Full Test Coverage**: 23 comprehensive tests
+- **TypeScript Ready**: Deploy scripts and interaction tools
 
 ### 🔮 Version 3 (Planned)
+
 - Emergency `pause()` functionality
 - Blacklist/whitelist mechanism
 - Advanced compliance features
@@ -47,22 +53,23 @@ A production-grade ERC-20 stablecoin deployed on Ethereum Sepolia testnet with f
 
 ## 🏗️ Technology Stack
 
-- **Smart Contract**: Solidity 0.8.26
-- **Framework**: OpenZeppelin Contracts
-- **Development Environment**: Remix IDE
-- **Network**: Ethereum Sepolia
+- **Smart Contract**: Solidity 0.8.20
+- **Framework**: OpenZeppelin Contracts 5.0
+- **Development**: Hardhat + TypeScript
+- **Testing**: Mocha + Chai (23 tests)
+- **Type Safety**: TypeChain auto-generated types
+- **Network**: Ethereum Sepolia + Local Hardhat
 - **DEX**: Uniswap V4
-- **Testing**: Remix Tests + Hardhat Console
 
 ---
 
 ## 📊 Version History
 
-| Version | Features | Status | Contract Address |
-|---------|----------|--------|------------------|
-| **v1** | ERC-20, OpenZeppelin, 1M supply, Uniswap V4 pool | 🟢 LIVE | [`0x2c31...a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc) |
-| **v2** | + `redeem()` with burn + event | 🟡 DEPLOYING | `TBA` |
-| **v3** | + `pause()` + blacklist | 🔵 PLANNED | — |
+| Version | Features                                         | Status     | Contract Address                                                                                    |
+| ------- | ------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------- |
+| **v1**  | ERC-20, OpenZeppelin, 1M supply, Uniswap V4 pool | 🟢 LIVE    | [`0x2c31...a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc) |
+| **v2**  | + `redeem()` with burn + multi-currency + events | 🟢 LIVE    | [`0x251C...e622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)  |
+| **v3**  | + `pause()` + blacklist                          | 🔵 PLANNED | —                                                                                                   |
 
 ---
 
@@ -74,8 +81,10 @@ This project demonstrates a complete journey of building a production-ready stab
 2. ✅ Implementing secure smart contracts with OpenZeppelin
 3. ✅ Deploying to Ethereum testnet
 4. ✅ Integrating with Uniswap for liquidity
-5. 🔄 Adding advanced DeFi features
-6. 🔮 Implementing compliance and security controls
+5. ✅ Adding redeem/burn functionality
+6. ✅ Professional TypeScript + Hardhat setup
+7. ✅ Comprehensive test coverage (37 tests)
+8. 🔮 Implementing pause and compliance controls (v3)
 
 ---
 
@@ -94,12 +103,15 @@ This project demonstrates a complete journey of building a production-ready stab
 This project supports **both** Remix IDE and local development:
 
 ### 🌐 Option 1: Remix IDE (Browser-based)
+
 Perfect for quick experiments and demonstrations. All contracts are Remix-compatible.
 
 ### 💻 Option 2: Local Development with Hardhat
+
 Professional development environment with comprehensive testing, deployment automation, and CI/CD integration.
 
 **Quick Start:**
+
 ```bash
 npm install
 npm run compile
@@ -110,28 +122,68 @@ npm test
 
 ---
 
-## 🧪 How to Interact
+## 🧪 How to Use
 
-### Using Remix IDE
-1. Open [Remix IDE](https://remix.ethereum.org/)
-2. Import contract: `contracts/PUSD.sol`
-3. Connect to Sepolia network via MetaMask
-4. Load deployed contract at `0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc`
+### Local Development
 
-### Using Ethers.js
-```javascript
-import { ethers } from 'ethers';
+```bash
+# Install dependencies
+npm install
 
-const PUSD_ADDRESS = '0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc';
-const provider = new ethers.JsonRpcProvider('SEPOLIA_RPC_URL');
-const pusd = new ethers.Contract(PUSD_ADDRESS, ABI, provider);
+# Compile contracts
+npm run compile
 
-// Check balance
-const balance = await pusd.balanceOf(yourAddress);
+# Run all tests (v1 + v2)
+npm test
+
+# Run only v2 tests
+npm run test:v2
+
+# Start local blockchain
+npm run node
+
+# Deploy v1 locally
+npm run deploy:local
+
+# Deploy v2 locally
+npm run deploy:v2:local
+
+# Interactive console
+npx hardhat console --network localhost
 ```
 
-### Trading on Uniswap
-Visit [Uniswap Sepolia](https://app.uniswap.org/) and connect to Sepolia testnet to trade PUSD/ETH.
+### Deploy to Sepolia
+
+```bash
+# Deploy v1
+npm run deploy:sepolia
+
+# Deploy v2
+npm run deploy:v2:sepolia
+```
+
+### Interact with Deployed Contracts
+
+```bash
+# Interact with Sepolia deployment
+npm run interact:sepolia
+
+# Or use console
+npx hardhat console --network sepolia
+```
+
+### Example: Redeem PUSD v2 Tokens
+
+```typescript
+const pusdv2 = await ethers.getContractAt(
+  "PUSDv2",
+  "0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622"
+);
+
+// Redeem 100 PUSD for USD (burns tokens)
+await pusdv2.redeem(ethers.parseUnits("100", 6), "USD");
+// Emits: Redeemed(user, amount, "USD")
+```
 
 ---
 
@@ -140,14 +192,19 @@ Visit [Uniswap Sepolia](https://app.uniswap.org/) and connect to Sepolia testnet
 ```
 PUSD-stablecoin/
 ├── contracts/
-│   ├── PUSD.sol              # Main stablecoin contract
-│   └── ...                   # Example contracts
+│   ├── PUSD.sol              # v1: Basic stablecoin
+│   └── PUSDv2.sol            # v2: With redeem function
 ├── scripts/
-│   ├── deploy_with_ethers.ts # Ethers.js deployment
-│   └── deploy_with_web3.ts   # Web3.js deployment
-├── tests/
-│   └── storage.test.js       # Contract tests
+│   ├── deploy.ts             # Deploy v1
+│   ├── deploy-v2.ts          # Deploy v2
+│   └── interact.ts           # Interact with deployed contracts
+├── test/
+│   ├── PUSD.test.ts          # v1 tests (15 tests)
+│   └── PUSDv2.test.ts        # v2 tests (23 tests)
+├── typechain-types/          # Auto-generated TypeScript types
 ├── artifacts/                # Compiled contracts
+├── hardhat.config.ts         # Hardhat configuration
+├── tsconfig.json             # TypeScript configuration
 └── README.md                 # This file
 ```
 
@@ -185,4 +242,3 @@ Made with ❤️ for the Web3 community
 [Report Bug](https://github.com/Purush1701/PUSD-stablecoin/issues) · [Request Feature](https://github.com/Purush1701/PUSD-stablecoin/issues)
 
 </div>
-

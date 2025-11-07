@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    // Essential for Solidity
+    "NomicFoundation.hardhat-solidity",
+    
+    // TypeScript support
+    "ms-vscode.vscode-typescript-next",
+    
+    // Code formatting
+    "esbenp.prettier-vscode",
+    
+    // Git integration
+    "eamodio.gitlens",
+    
+    // Markdown preview
+    "yzhang.markdown-all-in-one",
+    
+    // Better syntax highlighting
+    "github.github-vscode-theme"
+  ]
+}
+
