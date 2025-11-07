@@ -89,6 +89,27 @@ This project demonstrates a complete journey of building a production-ready stab
 
 ---
 
+## 🛠️ Development Setup
+
+This project supports **both** Remix IDE and local development:
+
+### 🌐 Option 1: Remix IDE (Browser-based)
+Perfect for quick experiments and demonstrations. All contracts are Remix-compatible.
+
+### 💻 Option 2: Local Development with Hardhat
+Professional development environment with comprehensive testing, deployment automation, and CI/CD integration.
+
+**Quick Start:**
+```bash
+npm install
+npm run compile
+npm test
+```
+
+📖 **Full Setup Guide**: See [SETUP.md](./SETUP.md) for detailed instructions on local development, testing, and deployment.
+
+---
+
 ## 🧪 How to Interact
 
 ### Using Remix IDE

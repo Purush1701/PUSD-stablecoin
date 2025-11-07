@@ -1,6 +1,16 @@
-node_modules/
-artifacts/
-.cache/
-remix_accounts/
+node_modules
 .env
-*.zip
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+
+# Remix files
+.deps
+
+# Mac
+.DS_Store

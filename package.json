@@ -1,0 +1,38 @@
+{
+  "name": "pusd-stablecoin",
+  "version": "1.0.0",
+  "description": "PUSD Stablecoin - Pegged USD on Sepolia",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "interact:sepolia": "hardhat run scripts/interact.ts --network sepolia",
+    "node": "hardhat node",
+    "console": "hardhat console",
+    "clean": "hardhat clean",
+    "typechain": "hardhat typechain"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "stablecoin",
+    "erc20"
+  ],
+  "author": "Purush",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.6",
+    "hardhat": "^2.19.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.3.1"
+  }
+}
