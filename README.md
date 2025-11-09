@@ -136,20 +136,20 @@ npm install
 # Compile contracts
 npm run compile
 
-# Run all tests (v1 + v2)
+# Run all tests (v1 + v2 + v3)
 npm test
 
-# Run only v2 tests
+# Run specific version tests
 npm run test:v2
+npm run test:v3
 
 # Start local blockchain
 npm run node
 
-# Deploy v1 locally
-npm run deploy:local
-
-# Deploy v2 locally
-npm run deploy:v2:local
+# Deploy locally
+npm run deploy:local        # v1
+npm run deploy:v2:local     # v2
+npm run deploy:v3:local     # v3
 
 # Interactive console
 npx hardhat console --network localhost
@@ -158,11 +158,10 @@ npx hardhat console --network localhost
 ### Deploy to Sepolia
 
 ```bash
-# Deploy v1
-npm run deploy:sepolia
-
-# Deploy v2
-npm run deploy:v2:sepolia
+# Deploy specific version
+npm run deploy:sepolia          # v1
+npm run deploy:v2:sepolia       # v2
+npm run deploy:v3:sepolia       # v3
 ```
 
 ### Interact with Deployed Contracts
@@ -175,17 +174,23 @@ npm run interact:sepolia
 npx hardhat console --network sepolia
 ```
 
-### Example: Redeem PUSD v2 Tokens
+### Example: Use v3 Features
 
 ```typescript
-const pusdv2 = await ethers.getContractAt(
-  "PUSDv2",
-  "0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622"
+// Connect to v3 contract
+const pusdv3 = await ethers.getContractAt(
+  "PUSDv3",
+  "0xc88a47790A74D0a72e6234cB96FC54fA632607b9"
 );
 
+// Pause contract (owner only)
+await pusdv3.pause();
+
+// Blacklist address (owner only)
+await pusdv3.blacklist(maliciousAddress);
+
 // Redeem 100 PUSD for USD (burns tokens)
-await pusdv2.redeem(ethers.parseUnits("100", 6), "USD");
-// Emits: Redeemed(user, amount, "USD")
+await pusdv3.redeem(ethers.parseUnits("100", 6), "USD");
 ```
 
 ---
@@ -196,14 +201,20 @@ await pusdv2.redeem(ethers.parseUnits("100", 6), "USD");
 PUSD-stablecoin/
 ├── contracts/
 │   ├── PUSD.sol              # v1: Basic stablecoin
-│   └── PUSDv2.sol            # v2: With redeem function
+│   ├── PUSDv2.sol            # v2: + Redeem function
+│   └── PUSDv3.sol            # v3: + Pause + Blacklist
 ├── scripts/
 │   ├── deploy.ts             # Deploy v1
 │   ├── deploy-v2.ts          # Deploy v2
+│   ├── deploy-v3.ts          # Deploy v3
 │   └── interact.ts           # Interact with deployed contracts
 ├── test/
 │   ├── PUSD.test.ts          # v1 tests (15 tests)
-│   └── PUSDv2.test.ts        # v2 tests (23 tests)
+│   ├── PUSDv2.test.ts        # v2 tests (22 tests)
+│   └── PUSDv3.test.ts        # v3 tests (44 tests)
+├── docs/
+│   ├── HARDHAT_CONSOLE_Ref.md    # Console guide
+│   └── COMMANDS_QUICK_Ref.md     # Quick reference
 ├── typechain-types/          # Auto-generated TypeScript types
 ├── artifacts/                # Compiled contracts
 ├── hardhat.config.ts         # Hardhat configuration
@@ -215,10 +226,13 @@ PUSD-stablecoin/
 
 ## 🔐 Security Considerations
 
-- ✅ Built with audited OpenZeppelin contracts
-- ✅ Deployed on testnet for thorough testing
-- ⚠️ This is a testnet deployment - not for production use
-- 🔮 Additional security features coming in v3
+- ✅ Built with audited OpenZeppelin contracts v5.0
+- ✅ Comprehensive test coverage (81 tests passing)
+- ✅ Pause/unpause emergency controls (v3)
+- ✅ Blacklist functionality for compliance (v3)
+- ✅ Max supply cap to prevent inflation (v3)
+- ⚠️ Testnet deployment - not audited for mainnet use
+- 🔒 Consider professional audit before production
 
 ---
 
