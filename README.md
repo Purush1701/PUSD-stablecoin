@@ -1,20 +1,21 @@
 # 💵 PUSD — Pegged USD Stablecoin
 
-> **PUSD v2: Live on Sepolia with Uniswap pool, MInt, Redeem**
+> **PUSD v3: Live on Sepolia - Mint, Redeem, Pause & Blacklist**
 
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.26-363636?logo=solidity)](https://soliditylang.org/)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-5.0-4E5EE4?logo=openzeppelin)](https://openzeppelin.com/)
 [![Network](https://img.shields.io/badge/Network-Sepolia-yellow)](https://sepolia.etherscan.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A production-grade ERC-20 stablecoin on Ethereum Sepolia with Uniswap integration and redeem functionality. Progressive journey from basic token (v1) to advanced DeFi features (v2).
+A production-grade ERC-20 stablecoin on Ethereum Sepolia with pause, blacklist, and redeem capabilities. Progressive journey from basic token (v1) to enterprise-grade compliance features (v3).
 
 ---
 
 ## 🚀 Live Deployments
 
 **PUSD v1**: [`0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc)  
-**PUSD v2**: [`0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622) ⭐
+**PUSD v2**: [`0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)  
+**PUSD v3**: [`0xc88a47790A74D0a72e6234cB96FC54fA632607b9`](https://sepolia.etherscan.io/address/0xc88a47790A74D0a72e6234cB96FC54fA632607b9) ⭐
 
 **Network**: Ethereum Sepolia Testnet  
 **Total Supply**: 1,000,000 PUSD each  
@@ -35,19 +36,21 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with Uniswap integratio
   - ✓ Add/remove liquidity
   - ✓ Transfer PUSD between wallets
 
-### ✅ Version 2 (Current - LIVE)
+### ✅ Version 2 (LIVE)
 
 - **Redeem Function**: Burn PUSD tokens with `redeem()`
 - **Multi-Currency Support**: USD, EUR, GBP, etc.
 - **Event Emission**: `Redeemed` event for off-chain tracking
-- **Full Test Coverage**: 23 comprehensive tests
+- **Full Test Coverage**: 22 comprehensive tests
 - **TypeScript Ready**: Deploy scripts and interaction tools
 
-### 🔮 Version 3 (Planned)
+### ✅ Version 3 (Current - LIVE)
 
-- Emergency `pause()` functionality
-- Blacklist/whitelist mechanism
-- Advanced compliance features
+- **Pause/Unpause**: Emergency pause functionality
+- **Blacklist**: Block malicious addresses
+- **Max Supply Cap**: 100M PUSD hard limit
+- **Full Test Coverage**: 44 comprehensive tests
+- **All v2 Features**: Includes redeem/burn
 
 ---
 
@@ -56,7 +59,7 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with Uniswap integratio
 - **Smart Contract**: Solidity 0.8.20
 - **Framework**: OpenZeppelin Contracts 5.0
 - **Development**: Hardhat + TypeScript
-- **Testing**: Mocha + Chai (23 tests)
+- **Testing**: Mocha + Chai (81 tests)
 - **Type Safety**: TypeChain auto-generated types
 - **Network**: Ethereum Sepolia + Local Hardhat
 - **DEX**: Uniswap V4
@@ -65,11 +68,11 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with Uniswap integratio
 
 ## 📊 Version History
 
-| Version | Features                                         | Status     | Contract Address                                                                                    |
-| ------- | ------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------- |
-| **v1**  | ERC-20, OpenZeppelin, 1M supply, Uniswap V4 pool | 🟢 LIVE    | [`0x2c31...a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc) |
-| **v2**  | + `redeem()` with burn + multi-currency + events | 🟢 LIVE    | [`0x251C...e622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)  |
-| **v3**  | + `pause()` + blacklist                          | 🔵 PLANNED | —                                                                                                   |
+| Version | Features                                         | Status  | Contract Address                                                                                    |
+| ------- | ------------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------- |
+| **v1**  | ERC-20, OpenZeppelin, 1M supply, Uniswap V4 pool | 🟢 LIVE | [`0x2c31...a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc) |
+| **v2**  | + `redeem()` with burn + multi-currency + events | 🟢 LIVE | [`0x251C...e622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)  |
+| **v3**  | + `pause()` + blacklist + max supply cap         | 🟢 LIVE | [`0xc88a...07b9`](https://sepolia.etherscan.io/address/0xc88a47790A74D0a72e6234cB96FC54fA632607b9)  |
 
 ---
 
@@ -83,8 +86,8 @@ This project demonstrates a complete journey of building a production-ready stab
 4. ✅ Integrating with Uniswap for liquidity
 5. ✅ Adding redeem/burn functionality
 6. ✅ Professional TypeScript + Hardhat setup
-7. ✅ Comprehensive test coverage (37 tests)
-8. 🔮 Implementing pause and compliance controls (v3)
+7. ✅ Comprehensive test coverage (81 tests)
+8. ✅ Implemented pause and compliance controls (v3)
 
 ---
 
