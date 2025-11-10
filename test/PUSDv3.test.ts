@@ -17,7 +17,7 @@ describe("PUSDv3 Stablecoin", function () {
     [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
     const PUSDv3Factory = await ethers.getContractFactory("PUSDv3");
-    pusdv3 = await PUSDv3Factory.deploy();
+    pusdv3 = (await PUSDv3Factory.deploy()) as unknown as PUSDv3;
     await pusdv3.waitForDeployment();
   });
 
@@ -65,9 +65,8 @@ describe("PUSDv3 Stablecoin", function () {
       const initialOwnerBalance = await pusdv3.balanceOf(owner.address);
       const excessAmount = initialOwnerBalance + 1n;
 
-      await expect(
-        pusdv3.connect(addr1).transfer(owner.address, excessAmount)
-      ).to.be.reverted;
+      await expect(pusdv3.connect(addr1).transfer(owner.address, excessAmount))
+        .to.be.reverted;
     });
   });
 
@@ -82,27 +81,26 @@ describe("PUSDv3 Stablecoin", function () {
 
     it("Should not allow non-owner to mint", async function () {
       const mintAmount = ethers.parseUnits("100", 6);
-      
-      await expect(
-        pusdv3.connect(addr1).mint(addr2.address, mintAmount)
-      ).to.be.reverted;
+
+      await expect(pusdv3.connect(addr1).mint(addr2.address, mintAmount)).to.be
+        .reverted;
     });
 
     it("Should not allow minting beyond max supply", async function () {
       const excessAmount = MAX_SUPPLY; // Would exceed 100M total
-      
-      await expect(
-        pusdv3.mint(addr1.address, excessAmount)
-      ).to.be.revertedWith("Exceeds max supply");
+
+      await expect(pusdv3.mint(addr1.address, excessAmount)).to.be.revertedWith(
+        "Exceeds max supply"
+      );
     });
 
     it("Should not allow minting to blacklisted address", async function () {
       await pusdv3.blacklist(addr1.address);
       const mintAmount = ethers.parseUnits("100", 6);
-      
-      await expect(
-        pusdv3.mint(addr1.address, mintAmount)
-      ).to.be.revertedWith("Recipient blacklisted");
+
+      await expect(pusdv3.mint(addr1.address, mintAmount)).to.be.revertedWith(
+        "Recipient blacklisted"
+      );
     });
   });
 
@@ -139,7 +137,7 @@ describe("PUSDv3 Stablecoin", function () {
     it("Should not allow redeem when paused", async function () {
       await pusdv3.pause();
       const redeemAmount = ethers.parseUnits("100", 6);
-      
+
       await expect(
         pusdv3.connect(addr1).redeem(redeemAmount, "USD")
       ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
@@ -148,7 +146,7 @@ describe("PUSDv3 Stablecoin", function () {
     it("Should not allow blacklisted user to redeem", async function () {
       await pusdv3.blacklist(addr1.address);
       const redeemAmount = ethers.parseUnits("100", 6);
-      
+
       await expect(
         pusdv3.connect(addr1).redeem(redeemAmount, "USD")
       ).to.be.revertedWith("Sender blacklisted");
@@ -168,25 +166,23 @@ describe("PUSDv3 Stablecoin", function () {
     });
 
     it("Should not allow non-owner to pause", async function () {
-      await expect(
-        pusdv3.connect(addr1).pause()
-      ).to.be.reverted;
+      await expect(pusdv3.connect(addr1).pause()).to.be.reverted;
     });
 
     it("Should not allow non-owner to unpause", async function () {
       await pusdv3.pause();
-      await expect(
-        pusdv3.connect(addr1).unpause()
-      ).to.be.reverted;
+      await expect(pusdv3.connect(addr1).unpause()).to.be.reverted;
     });
 
     it("Should block transfers when paused", async function () {
       await pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6));
-      
+
       await pusdv3.pause();
-      
+
       await expect(
-        pusdv3.connect(addr1).transfer(addr2.address, ethers.parseUnits("10", 6))
+        pusdv3
+          .connect(addr1)
+          .transfer(addr2.address, ethers.parseUnits("10", 6))
       ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
     });
 
@@ -194,15 +190,17 @@ describe("PUSDv3 Stablecoin", function () {
       await pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6));
       await pusdv3.pause();
       await pusdv3.unpause();
-      
+
       await expect(
-        pusdv3.connect(addr1).transfer(addr2.address, ethers.parseUnits("10", 6))
+        pusdv3
+          .connect(addr1)
+          .transfer(addr2.address, ethers.parseUnits("10", 6))
       ).to.not.be.reverted;
     });
 
     it("Should block minting when paused", async function () {
       await pusdv3.pause();
-      
+
       await expect(
         pusdv3.mint(addr1.address, ethers.parseUnits("100", 6))
       ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
@@ -214,44 +212,45 @@ describe("PUSDv3 Stablecoin", function () {
       await expect(pusdv3.blacklist(addr1.address))
         .to.emit(pusdv3, "Blacklisted")
         .withArgs(addr1.address);
-      
+
       expect(await pusdv3.blacklisted(addr1.address)).to.be.true;
     });
 
     it("Should allow owner to unblacklist address", async function () {
       await pusdv3.blacklist(addr1.address);
-      
+
       await expect(pusdv3.unblacklist(addr1.address))
         .to.emit(pusdv3, "Unblacklisted")
         .withArgs(addr1.address);
-      
+
       expect(await pusdv3.blacklisted(addr1.address)).to.be.false;
     });
 
     it("Should not allow blacklisting zero address", async function () {
-      await expect(
-        pusdv3.blacklist(ethers.ZeroAddress)
-      ).to.be.revertedWith("Zero address");
+      await expect(pusdv3.blacklist(ethers.ZeroAddress)).to.be.revertedWith(
+        "Zero address"
+      );
     });
 
     it("Should not allow non-owner to blacklist", async function () {
-      await expect(
-        pusdv3.connect(addr1).blacklist(addr2.address)
-      ).to.be.reverted;
+      await expect(pusdv3.connect(addr1).blacklist(addr2.address)).to.be
+        .reverted;
     });
 
     it("Should block blacklisted sender from transferring", async function () {
       await pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6));
       await pusdv3.blacklist(addr1.address);
-      
+
       await expect(
-        pusdv3.connect(addr1).transfer(addr2.address, ethers.parseUnits("10", 6))
+        pusdv3
+          .connect(addr1)
+          .transfer(addr2.address, ethers.parseUnits("10", 6))
       ).to.be.revertedWith("Sender blacklisted");
     });
 
     it("Should block transfers to blacklisted recipient", async function () {
       await pusdv3.blacklist(addr1.address);
-      
+
       await expect(
         pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6))
       ).to.be.revertedWith("Recipient blacklisted");
@@ -261,9 +260,11 @@ describe("PUSDv3 Stablecoin", function () {
       await pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6));
       await pusdv3.blacklist(addr1.address);
       await pusdv3.unblacklist(addr1.address);
-      
+
       await expect(
-        pusdv3.connect(addr1).transfer(addr2.address, ethers.parseUnits("10", 6))
+        pusdv3
+          .connect(addr1)
+          .transfer(addr2.address, ethers.parseUnits("10", 6))
       ).to.not.be.reverted;
     });
   });
@@ -272,18 +273,22 @@ describe("PUSDv3 Stablecoin", function () {
     it("Should block blacklisted user even when not paused", async function () {
       await pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6));
       await pusdv3.blacklist(addr1.address);
-      
+
       await expect(
-        pusdv3.connect(addr1).transfer(addr2.address, ethers.parseUnits("10", 6))
+        pusdv3
+          .connect(addr1)
+          .transfer(addr2.address, ethers.parseUnits("10", 6))
       ).to.be.revertedWith("Sender blacklisted");
     });
 
     it("Should block all transfers when paused, even for non-blacklisted", async function () {
       await pusdv3.transfer(addr1.address, ethers.parseUnits("100", 6));
       await pusdv3.pause();
-      
+
       await expect(
-        pusdv3.connect(addr1).transfer(addr2.address, ethers.parseUnits("10", 6))
+        pusdv3
+          .connect(addr1)
+          .transfer(addr2.address, ethers.parseUnits("10", 6))
       ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
     });
 
@@ -291,7 +296,7 @@ describe("PUSDv3 Stablecoin", function () {
       await pusdv3.mint(addr1.address, ethers.parseUnits("100", 6));
       await pusdv3.blacklist(addr1.address);
       await pusdv3.pause();
-      
+
       // Blacklist check happens first
       await expect(
         pusdv3.connect(addr1).redeem(ethers.parseUnits("10", 6), "USD")
@@ -303,35 +308,34 @@ describe("PUSDv3 Stablecoin", function () {
     it("Should track total supply correctly", async function () {
       const mintAmount = ethers.parseUnits("1000", 6);
       await pusdv3.mint(addr1.address, mintAmount);
-      
+
       expect(await pusdv3.totalSupply()).to.equal(INITIAL_SUPPLY + mintAmount);
     });
 
     it("Should enforce max supply on large mints", async function () {
       const largeAmount = MAX_SUPPLY - INITIAL_SUPPLY + 1n;
-      
-      await expect(
-        pusdv3.mint(addr1.address, largeAmount)
-      ).to.be.revertedWith("Exceeds max supply");
+
+      await expect(pusdv3.mint(addr1.address, largeAmount)).to.be.revertedWith(
+        "Exceeds max supply"
+      );
     });
 
     it("Should allow minting up to max supply", async function () {
       const allowedAmount = MAX_SUPPLY - INITIAL_SUPPLY;
-      
-      await expect(
-        pusdv3.mint(addr1.address, allowedAmount)
-      ).to.not.be.reverted;
-      
+
+      await expect(pusdv3.mint(addr1.address, allowedAmount)).to.not.be
+        .reverted;
+
       expect(await pusdv3.totalSupply()).to.equal(MAX_SUPPLY);
     });
 
     it("Should not allow any minting when at max supply", async function () {
       const allowedAmount = MAX_SUPPLY - INITIAL_SUPPLY;
       await pusdv3.mint(addr1.address, allowedAmount);
-      
-      await expect(
-        pusdv3.mint(addr2.address, 1n)
-      ).to.be.revertedWith("Exceeds max supply");
+
+      await expect(pusdv3.mint(addr2.address, 1n)).to.be.revertedWith(
+        "Exceeds max supply"
+      );
     });
   });
 
@@ -342,17 +346,14 @@ describe("PUSDv3 Stablecoin", function () {
     });
 
     it("Should prevent non-owners from transferring ownership", async function () {
-      await expect(
-        pusdv3.connect(addr1).transferOwnership(addr2.address)
-      ).to.be.reverted;
+      await expect(pusdv3.connect(addr1).transferOwnership(addr2.address)).to.be
+        .reverted;
     });
 
     it("Should allow new owner to use admin functions", async function () {
       await pusdv3.transferOwnership(addr1.address);
-      
-      await expect(
-        pusdv3.connect(addr1).pause()
-      ).to.not.be.reverted;
+
+      await expect(pusdv3.connect(addr1).pause()).to.not.be.reverted;
     });
   });
 
@@ -380,4 +381,3 @@ describe("PUSDv3 Stablecoin", function () {
     });
   });
 });
-
