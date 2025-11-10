@@ -2,9 +2,12 @@
 
 > **PUSD v3: Live on Sepolia - Mint, Redeem, Pause & Blacklist**
 
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.26-363636?logo=solidity)](https://soliditylang.org/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.20-blue?style=flat-square)](https://soliditylang.org/)
 [![OpenZeppelin](https://img.shields.io/badge/OpenZeppelin-5.0-4E5EE4?logo=openzeppelin)](https://openzeppelin.com/)
-[![Network](https://img.shields.io/badge/Network-Sepolia-yellow)](https://sepolia.etherscan.io/)
+[![Hardhat](https://img.shields.io/badge/Hardhat-TypeScript-green?style=flat-square)](https://hardhat.org/)
+![Tests](https://img.shields.io/badge/Tests-44%20Passing-brightgreen?style=flat-square)
+![Audit](https://img.shields.io/badge/Audit-Remix%20100%25%20CLEAN-success?style=flat-square)
+[![Network](https://img.shields.io/badge/Network-Sepolia-blueviolet?style=flat-square)](https://sepolia.etherscan.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A production-grade ERC-20 stablecoin on Ethereum Sepolia with pause, blacklist, and redeem capabilities. Progressive journey from basic token (v1) to enterprise-grade compliance features (v3).
@@ -47,10 +50,10 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with pause, blacklist, 
 ### ✅ Version 3 (Current - LIVE)
 
 - **Pause/Unpause**: Emergency pause functionality
-- **Blacklist**: Block malicious addresses
+- **Blacklist**: Block malicious addresses (SFC/HKMA compliance) 
 - **Max Supply Cap**: 100M PUSD hard limit
 - **Full Test Coverage**: 44 comprehensive tests
-- **All v2 Features**: Includes redeem/burn
+- **All v2 Features**: Includes redeem/burn - `redeem()` blocked when paused/blacklisted 
 
 ---
 
