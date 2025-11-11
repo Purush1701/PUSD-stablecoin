@@ -1,0 +1,28 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "contracts": {
+    "pusdv3": {
+      "address": "0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5",
+      "deploymentDate": "2025-11-11",
+      "verified": true
+    }
+  },
+  "testAmounts": {
+    "mint": "1000",
+    "transfer": "100",
+    "burn": "50",
+    "redeem": "25",
+    "smallTransfer": "10"
+  },
+  "gasLimits": {
+    "mint": 100000,
+    "transfer": 100000,
+    "pause": 50000,
+    "blacklist": 75000
+  },
+  "minBalance": {
+    "sepolia": "0.01",
+    "description": "Minimum ETH balance required per wallet for gas fees"
+  }
+}

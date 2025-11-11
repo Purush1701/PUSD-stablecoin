@@ -1,0 +1,21 @@
+{
+  "description": "Test wallet addresses for integration testing on Sepolia",
+  "note": "These are PUBLIC addresses only. Private keys should be in .env file.",
+  "wallets": {
+    "deployer": {
+      "address": "0x981f95Ce37852359900BF3Bf934A579e34669f91",
+      "description": "Contract owner and deployer",
+      "envKey": "PRIVATE_KEY"
+    },
+    "recipient": {
+      "address": "0xf37e075367e1ba94d01e37afe4ff61eafb6fcd20",
+      "description": "Test recipient for transfers",
+      "envKey": "TEST_WALLET_2"
+    },
+    "blacklistTest": {
+      "address": "0xd0fdacc47ca6c42c96cdc4a0f7219f2ca716993e",
+      "description": "Test wallet for blacklist functionality",
+      "envKey": "TEST_WALLET_3"
+    }
+  }
+}

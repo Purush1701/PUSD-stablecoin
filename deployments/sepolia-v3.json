@@ -1,0 +1,16 @@
+{
+  "network": "sepolia",
+  "contractName": "PUSDv3",
+  "address": "0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5",
+  "deployer": "0x981f95Ce37852359900BF3Bf934A579e34669f91",
+  "deploymentDate": "2025-11-11",
+  "tokenDetails": {
+    "name": "Pegged USDv3",
+    "symbol": "PUSDv3",
+    "decimals": 6,
+    "initialSupply": "1000000",
+    "maxSupply": "100000000"
+  },
+  "etherscanUrl": "https://sepolia.etherscan.io/address/0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5",
+  "verified": true
+}

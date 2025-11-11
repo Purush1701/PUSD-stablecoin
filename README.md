@@ -16,9 +16,11 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with pause, blacklist, 
 
 ## 🚀 Live Deployments
 
-**PUSD v1**: [`0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc)  
-**PUSD v2**: [`0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)  
-**PUSD v3**: [`0xc88a47790A74D0a72e6234cB96FC54fA632607b9`](https://sepolia.etherscan.io/address/0xc88a47790A74D0a72e6234cB96FC54fA632607b9) ⭐
+**PUSD v3**: [`0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5`](https://sepolia.etherscan.io/address/0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5) ⭐ **Current**
+**PUSD v2**: [`0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622`](https://sepolia.etherscan.io/address/
+0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)  
+**PUSD v1**: [`0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc`](https://sepolia.etherscan.io/address/
+0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc)
 
 **Network**: Ethereum Sepolia Testnet  
 **Total Supply**: 1,000,000 PUSD each  
@@ -50,10 +52,10 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with pause, blacklist, 
 ### ✅ Version 3 (Current - LIVE)
 
 - **Pause/Unpause**: Emergency pause functionality
-- **Blacklist**: Block malicious addresses (SFC/HKMA compliance) 
+- **Blacklist**: Block malicious addresses (SFC/HKMA compliance)
 - **Max Supply Cap**: 100M PUSD hard limit
 - **Full Test Coverage**: 44 comprehensive tests
-- **All v2 Features**: Includes redeem/burn - `redeem()` blocked when paused/blacklisted 
+- **All v2 Features**: Includes redeem/burn - `redeem()` blocked when paused/blacklisted
 
 ---
 

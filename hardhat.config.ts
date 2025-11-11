@@ -19,8 +19,12 @@ const config: HardhatUserConfig = {
     },
     // Sepolia testnet
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/YOUR-API-KEY",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      url: process.env.SEPOLIA_RPC_URL,
+      accounts: [
+        process.env.PRIVATE_KEY,
+        process.env.TEST_WALLET_2,
+        process.env.TEST_WALLET_3,
+      ].filter(Boolean) as string[],
       chainId: 11155111,
     },
     // Mainnet (for forking/testing)
@@ -39,4 +43,3 @@ const config: HardhatUserConfig = {
 };
 
 export default config;
-
