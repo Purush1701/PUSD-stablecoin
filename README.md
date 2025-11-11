@@ -91,7 +91,7 @@ This project demonstrates a complete journey of building a production-ready stab
 4. ✅ Integrating with Uniswap for liquidity
 5. ✅ Adding redeem/burn functionality
 6. ✅ Professional TypeScript + Hardhat setup
-7. ✅ Comprehensive test coverage (81 tests)
+7. ✅ Comprehensive test coverage (44 unit tests + integration tests)
 8. ✅ Implemented pause and compliance controls (v3)
 
 ---
@@ -204,27 +204,38 @@ await pusdv3.redeem(ethers.parseUnits("100", 6), "USD");
 
 ```
 PUSD-stablecoin/
-├── contracts/
-│   ├── PUSD.sol              # v1: Basic stablecoin
-│   ├── PUSDv2.sol            # v2: + Redeem function
-│   └── PUSDv3.sol            # v3: + Pause + Blacklist
-├── scripts/
-│   ├── deploy.ts             # Deploy v1
-│   ├── deploy-v2.ts          # Deploy v2
-│   ├── deploy-v3.ts          # Deploy v3
-│   └── interact.ts           # Interact with deployed contracts
-├── test/
-│   ├── PUSD.test.ts          # v1 tests (15 tests)
-│   ├── PUSDv2.test.ts        # v2 tests (22 tests)
-│   └── PUSDv3.test.ts        # v3 tests (44 tests)
-├── docs/
-│   ├── HARDHAT_CONSOLE_Ref.md    # Console guide
-│   └── COMMANDS_QUICK_Ref.md     # Quick reference
-├── typechain-types/          # Auto-generated TypeScript types
-├── artifacts/                # Compiled contracts
-├── hardhat.config.ts         # Hardhat configuration
-├── tsconfig.json             # TypeScript configuration
-└── README.md                 # This file
+├── contracts/                    # Smart Contracts
+│   ├── PUSD.sol                 # v1: Basic ERC-20 stablecoin
+│   ├── PUSDv2.sol               # v2: + Redeem function
+│   └── PUSDv3.sol               # v3: + Pause + Blacklist
+├── scripts/                      # Deployment & Interaction Scripts
+│   ├── deploy.ts                # Deploy v1
+│   ├── deploy-v2.ts             # Deploy v2
+│   ├── deploy-v3.ts             # Deploy v3 ⭐
+│   ├── interact.ts              # Interact with contracts (local)
+│   ├── interact-sepolia.ts      # Interact with Sepolia deployment ⭐
+│   └── fund-wallets.ts          # Fund test wallets with Sepolia ETH ⭐
+├── test/                         # Test Suite
+│   ├── PUSDv3.test.ts           # Unit tests (44 tests) ✅
+│   ├── PUSDv3.integration.test.ts # Integration tests on Sepolia ⭐
+│   └── fixtures/                # Test Configuration ⭐
+│       ├── sepolia-config.json  # Network & test parameters
+│       └── test-wallets.json    # Test wallet addresses
+├── deployments/                  # Deployment Records ⭐
+│   └── sepolia-v3.json          # PUSDv3 deployment info
+├── docs/                         # Documentation
+│   ├── TESTING_GUIDE.md         # Comprehensive testing guide ⭐
+│   ├── TESTDATA.md              # Test data structure guide ⭐
+│   ├── HARDHAT_CONSOLE_Ref.md   # Hardhat console reference
+│   └── COMMANDS_QUICK_Ref.md    # Quick command reference
+├── typechain-types/              # Auto-generated TypeScript types
+├── artifacts/                    # Compiled contracts
+├── .env.example                  # Environment template ⭐
+├── hardhat.config.ts             # Hardhat configuration
+├── tsconfig.json                 # TypeScript configuration
+└── README.md                     # This file
+
+⭐ = New additions for production-grade testing & deployment
 ```
 
 ---
@@ -232,10 +243,11 @@ PUSD-stablecoin/
 ## 🔐 Security Considerations
 
 - ✅ Built with audited OpenZeppelin contracts v5.0
-- ✅ Comprehensive test coverage (81 tests passing)
+- ✅ Comprehensive test coverage (44 unit tests + 16 integration tests on Sepolia Testnet)
 - ✅ Pause/unpause emergency controls (v3)
 - ✅ Blacklist functionality for compliance (v3)
 - ✅ Max supply cap to prevent inflation (v3)
+- ✅ Automatic gas balance validation for Sepolia tests
 - ⚠️ Testnet deployment - not audited for mainnet use
 - 🔒 Consider professional audit before production
 
