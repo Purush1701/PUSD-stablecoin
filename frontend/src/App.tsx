@@ -18,7 +18,6 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  ArrowLeftRight,
   ArrowUpRight,
   Flame,
   Wallet,
