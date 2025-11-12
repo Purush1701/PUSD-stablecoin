@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { sepolia } from "wagmi/chains";
 import { injected } from "@wagmi/connectors";
-
 import "@rainbow-me/rainbowkit/styles.css";
 
 const config = createConfig({
