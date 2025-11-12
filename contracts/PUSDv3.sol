@@ -23,7 +23,7 @@ contract PUSDv3 is ERC20, Pausable, Ownable {
         _mint(to, amount);
     }
 
-    // FIXED #1: redeem() now checks blacklist + pause
+    // redeem() now checks blacklist + pause
     function redeem(
         uint256 amount,
         string memory currency
