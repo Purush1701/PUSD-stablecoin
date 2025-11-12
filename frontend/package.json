@@ -58,5 +58,17 @@
   "resolutions": {
     "ajv": "6.12.6",
     "ajv-keywords": "3.5.2"
+  },
+  "overrides": {
+    "ajv": "6.12.6",
+    "ajv-keywords": "3.5.2",
+    "schema-utils": {
+      "ajv": "6.12.6",
+      "ajv-keywords": "3.5.2"
+    },
+    "webpack": {
+      "ajv": "6.12.6",
+      "ajv-keywords": "3.5.2"
+    }
   }
 }
