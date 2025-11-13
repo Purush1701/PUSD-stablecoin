@@ -8,7 +8,7 @@ import {
 } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { PUSD_ADDRESS, PUSD_ABI } from "./config";
+import { PUSD_ADDRESS, PUSDv3_ABI } from "./config";
 import {
   DollarSign,
   Zap,
@@ -36,36 +36,50 @@ export default function App() {
     contracts: [
       {
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "balanceOf",
         args: [address || "0x0000000000000000000000000000000000000000"],
       },
       {
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "totalSupply",
       },
       {
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "paused",
+      },
+      {
+        address: PUSD_ADDRESS,
+        abi: PUSDv3_ABI,
+        functionName: "owner",
       },
     ],
   });
 
-  const [balance, supply, paused] = contractData || [];
+  const [balance, supply, paused, owner] = contractData || [];
   const balanceValue = balance?.result as bigint | undefined;
   const supplyValue = supply?.result as bigint | undefined;
   const pausedValue = paused?.result as boolean | undefined;
+  const ownerAddress = owner?.result as string | undefined;
+
+  // Check if connected wallet is the owner
+  const isOwner =
+    address && ownerAddress
+      ? address.toLowerCase() === ownerAddress.toLowerCase()
+      : false;
 
   const [mintAddress, setMintAddress] = useState("");
   const [mintAmount, setMintAmount] = useState("");
   const [transferAddress, setTransferAddress] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
   const [burnAmount, setBurnAmount] = useState("");
+  const [redeemAddress, setRedeemAddress] = useState("");
   const [blacklistAddress, setBlacklistAddress] = useState("");
   const [unblacklistAddress, setUnblacklistAddress] = useState("");
   const [mintToSelf, setMintToSelf] = useState(false);
+  const [redeemToSelf, setRedeemToSelf] = useState(false);
   const [expandedSections, setExpandedSections] = useState<{
     token: boolean;
     mint: boolean;
@@ -79,7 +93,7 @@ export default function App() {
   });
   const [toast, setToast] = useState<{
     message: string;
-    variant: "success" | "error" | "info";
+    variant: "success" | "error" | "warning";
   } | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -92,7 +106,7 @@ export default function App() {
 
   const pushToast = (
     message: string,
-    variant: "success" | "error" | "info"
+    variant: "success" | "error" | "warning"
   ) => {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
@@ -115,13 +129,20 @@ export default function App() {
     }
   }, [mintToSelf, address]);
 
+  useEffect(() => {
+    if (redeemToSelf) {
+      setRedeemAddress(address ?? "");
+    }
+  }, [redeemToSelf, address]);
+
   const showSuccess = (message: string) => pushToast(message, "success");
-  const showInfo = (message: string) => pushToast(message, "info");
-  const toastStyleMap: Record<"success" | "error" | "info", string> = {
+  const showWarning = (message: string) => pushToast(message, "warning");
+  const toastStyleMap: Record<"success" | "error" | "warning", string> = {
     success:
       "border-emerald-400/70 bg-emerald-500/15 text-emerald-100 shadow-emerald-500/20",
     error: "border-red-500/70 bg-red-500/15 text-red-100 shadow-red-500/20",
-    info: "border-amber-400/60 bg-amber-500/15 text-amber-100 shadow-amber-500/20",
+    warning:
+      "border-amber-400/60 bg-amber-500/15 text-amber-100 shadow-amber-500/20",
   };
 
   const formatAddress = (value?: string) =>
@@ -130,7 +151,7 @@ export default function App() {
   const copyContractAddress = async () => {
     try {
       await navigator.clipboard.writeText(PUSD_ADDRESS);
-      showInfo("Contract address copied to clipboard.");
+      showSuccess("Contract address copied to clipboard.");
     } catch (error) {
       showError(error);
     }
@@ -153,7 +174,7 @@ export default function App() {
     try {
       const hash = await writeContractAsync({
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: pausedValue ? "unpause" : "pause",
       });
       if (publicClient) {
@@ -178,7 +199,7 @@ export default function App() {
       return;
     }
     if (mintToSelf && !address) {
-      pushToast("Connect your wallet to mint to yourself.", "error");
+      pushToast("Connect your wallet to mint to yourself.", "warning");
       return;
     }
 
@@ -186,7 +207,7 @@ export default function App() {
       const amount = parseUnits(mintAmount, DECIMALS);
       const hash = await writeContractAsync({
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "mint",
         args: [destination, amount],
       });
@@ -215,7 +236,7 @@ export default function App() {
       const amount = parseUnits(transferAmount, DECIMALS);
       const hash = await writeContractAsync({
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "transfer",
         args: [transferAddress, amount],
       });
@@ -235,8 +256,22 @@ export default function App() {
 
   const handleBurn = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!burnAmount) {
-      pushToast("Enter an amount to burn.", "error");
+    const destination = redeemToSelf ? address : redeemAddress;
+    if (!destination || !burnAmount) {
+      pushToast("Enter a wallet address and amount to redeem.", "error");
+      return;
+    }
+    if (redeemToSelf && !address) {
+      pushToast("Connect your wallet to redeem from yourself.", "warning");
+      return;
+    }
+    // Note: Contract's redeem function always redeems from msg.sender
+    // The address field is informational - user must be connected with that wallet
+    if (destination.toLowerCase() !== address?.toLowerCase()) {
+      pushToast(
+        "You can only redeem tokens from your connected wallet address.",
+        "warning"
+      );
       return;
     }
 
@@ -244,7 +279,7 @@ export default function App() {
       const amount = parseUnits(burnAmount, DECIMALS);
       const hash = await writeContractAsync({
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "redeem",
         args: [amount, "USD"],
       });
@@ -252,9 +287,12 @@ export default function App() {
         await publicClient.waitForTransactionReceipt({ hash });
       }
       await refetch();
-      showInfo(
-        "Burn request submitted. The USD amount will be settled by wire transfer to the bank account in 2-3 business days."
+      showSuccess(
+        "Redeem request submitted. The USD amount will be settled by wire transfer to the bank account in 2-3 business days."
       );
+      if (!redeemToSelf) {
+        setRedeemAddress("");
+      }
       setBurnAmount("");
     } catch (error) {
       showError(error);
@@ -271,7 +309,7 @@ export default function App() {
     try {
       const hash = await writeContractAsync({
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "blacklist",
         args: [blacklistAddress],
       });
@@ -296,7 +334,7 @@ export default function App() {
     try {
       const hash = await writeContractAsync({
         address: PUSD_ADDRESS,
-        abi: PUSD_ABI,
+        abi: PUSDv3_ABI,
         functionName: "unblacklist",
         args: [unblacklistAddress],
       });
@@ -320,8 +358,23 @@ export default function App() {
           className={`fixed right-6 top-6 z-50 flex items-start gap-3 rounded-2xl border px-5 py-4 text-sm font-medium shadow-lg backdrop-blur ${
             toastStyleMap[toast.variant]
           }`}
+          style={{
+            maxWidth: "28rem",
+            width: "auto",
+            minWidth: "20rem",
+            wordWrap: "break-word",
+            overflowWrap: "anywhere",
+          }}
         >
-          <span>{toast.message}</span>
+          <span
+            className="flex-1 break-words"
+            style={{
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {toast.message}
+          </span>
           <button
             onClick={() => {
               if (toastTimeoutRef.current) {
@@ -329,7 +382,7 @@ export default function App() {
               }
               setToast(null);
             }}
-            className="text-white/60 transition hover:text-white/90"
+            className="text-white/60 transition hover:text-white/90 flex-shrink-0 mt-0.5"
             aria-label="Dismiss notification"
           >
             <X size={16} />
@@ -348,8 +401,20 @@ export default function App() {
                 HKMA/SFC-Compliant • Live on Sepolia
               </p>
             </div>
-            <div className="mt-6 flex justify-center">
-              <ConnectButton />
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3">
+                <ConnectButton />
+                {isConnected && isOwner && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/50 px-3 py-1.5 text-xs font-semibold text-emerald-200 shadow-lg backdrop-blur-sm">
+                    <Shield
+                      size={12}
+                      className="text-emerald-300"
+                      fill="currentColor"
+                    />
+                    Owner
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -423,80 +488,84 @@ export default function App() {
 
           {isConnected && (
             <div className="space-y-4">
-              {/* Owner Mint - Collapsible */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden">
-                <button
-                  onClick={() => toggleSection("mint")}
-                  className="flex w-full items-center justify-between p-6 text-left"
-                >
-                  <h3 className="text-lg font-semibold flex items-center gap-3">
-                    <Zap className="text-green-400" size={20} /> Owner Mint
-                  </h3>
-                  {expandedSections.mint ? (
-                    <ChevronUp size={20} className="text-gray-400" />
-                  ) : (
-                    <ChevronDown size={20} className="text-gray-400" />
+              {/* Mint - Owner Only */}
+              {isOwner && (
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden">
+                  <button
+                    onClick={() => toggleSection("mint")}
+                    className="flex w-full items-center justify-between p-6 text-left"
+                  >
+                    <h3 className="text-lg font-semibold flex items-center gap-3">
+                      <Zap className="text-green-400" size={20} /> Mint
+                    </h3>
+                    {expandedSections.mint ? (
+                      <ChevronUp size={20} className="text-gray-400" />
+                    ) : (
+                      <ChevronDown size={20} className="text-gray-400" />
+                    )}
+                  </button>
+                  {expandedSections.mint && (
+                    <div className="px-6 pb-6">
+                      <form onSubmit={handleMint} className="space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <label className="flex items-center gap-2 text-xs font-medium text-purple-100">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-white/30 bg-black/40"
+                              checked={mintToSelf}
+                              onChange={(event) =>
+                                setMintToSelf(event.target.checked)
+                              }
+                            />
+                            Mint to connected wallet
+                          </label>
+                          {mintToSelf && address && (
+                            <span className="flex items-center gap-1 text-xs text-purple-200">
+                              <Wallet size={14} />
+                              {formatAddress(address)}
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          value={mintToSelf ? address ?? "" : mintAddress}
+                          onChange={(event) =>
+                            !mintToSelf && setMintAddress(event.target.value)
+                          }
+                          placeholder="Recipient wallet address"
+                          disabled={mintToSelf}
+                          className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        />
+                        <input
+                          value={mintAmount}
+                          onChange={(event) =>
+                            setMintAmount(event.target.value)
+                          }
+                          placeholder="Amount to mint"
+                          type="number"
+                          min="0"
+                          step="0.000001"
+                          className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        />
+                        <button
+                          type="submit"
+                          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:from-green-600 hover:to-emerald-700"
+                        >
+                          <Zap size={18} /> Mint Tokens
+                        </button>
+                      </form>
+                    </div>
                   )}
-                </button>
-                {expandedSections.mint && (
-                  <div className="px-6 pb-6">
-                    <form onSubmit={handleMint} className="space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <label className="flex items-center gap-2 text-xs font-medium text-purple-100">
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-white/30 bg-black/40"
-                            checked={mintToSelf}
-                            onChange={(event) =>
-                              setMintToSelf(event.target.checked)
-                            }
-                          />
-                          Mint to connected wallet
-                        </label>
-                        {mintToSelf && address && (
-                          <span className="flex items-center gap-1 text-xs text-purple-200">
-                            <Wallet size={14} />
-                            {formatAddress(address)}
-                          </span>
-                        )}
-                      </div>
-                      <input
-                        value={mintToSelf ? address ?? "" : mintAddress}
-                        onChange={(event) =>
-                          !mintToSelf && setMintAddress(event.target.value)
-                        }
-                        placeholder="Recipient wallet address"
-                        disabled={mintToSelf}
-                        className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      />
-                      <input
-                        value={mintAmount}
-                        onChange={(event) => setMintAmount(event.target.value)}
-                        placeholder="Amount to mint"
-                        type="number"
-                        min="0"
-                        step="0.000001"
-                        className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                      />
-                      <button
-                        type="submit"
-                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:from-green-600 hover:to-emerald-700"
-                      >
-                        <Zap size={18} /> Mint Tokens
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Owner Transfer - Collapsible */}
+              {/* Transfer - Available to All */}
               <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden">
                 <button
                   onClick={() => toggleSection("transfer")}
                   className="flex w-full items-center justify-between p-6 text-left"
                 >
                   <h3 className="text-lg font-semibold flex items-center gap-3">
-                    <ArrowUpRight className="text-blue-400" size={20} /> Owner
+                    <ArrowUpRight className="text-blue-400" size={20} />{" "}
                     Transfer
                   </h3>
                   {expandedSections.transfer ? (
@@ -557,6 +626,34 @@ export default function App() {
                 {expandedSections.burn && (
                   <div className="px-6 pb-6">
                     <form onSubmit={handleBurn} className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <label className="flex items-center gap-2 text-xs font-medium text-purple-100">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-white/30 bg-black/40"
+                            checked={redeemToSelf}
+                            onChange={(event) =>
+                              setRedeemToSelf(event.target.checked)
+                            }
+                          />
+                          Redeem from connected wallet
+                        </label>
+                        {redeemToSelf && address && (
+                          <span className="flex items-center gap-1 text-xs text-purple-200">
+                            <Wallet size={14} />
+                            {formatAddress(address)}
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        value={redeemToSelf ? address ?? "" : redeemAddress}
+                        onChange={(event) =>
+                          !redeemToSelf && setRedeemAddress(event.target.value)
+                        }
+                        placeholder="Wallet address to redeem from"
+                        disabled={redeemToSelf}
+                        className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
                       <input
                         value={burnAmount}
                         onChange={(event) => setBurnAmount(event.target.value)}
@@ -577,97 +674,105 @@ export default function App() {
                 )}
               </div>
 
-              {/* Token Management - Collapsible */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden">
-                <button
-                  onClick={() => toggleSection("token")}
-                  className="flex w-full items-center justify-between p-6 text-left"
-                >
-                  <h3 className="text-lg font-semibold flex items-center gap-3">
-                    <Shield className="text-purple-400" size={20} /> Token
-                    Management
-                  </h3>
-                  {expandedSections.token ? (
-                    <ChevronUp size={20} className="text-gray-400" />
-                  ) : (
-                    <ChevronDown size={20} className="text-gray-400" />
-                  )}
-                </button>
-                {expandedSections.token && (
-                  <div className="space-y-4 px-6 pb-6">
-                    <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-4 text-sm text-yellow-100">
-                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                          <h4 className="text-base font-semibold text-yellow-100">
-                            Contract Pause Control
-                          </h4>
-                          <p className="text-xs text-yellow-100/80">
-                            Toggle the contract&apos;s paused state. Transfers
-                            are blocked while paused.
-                          </p>
-                        </div>
-                        <button
-                          onClick={handleTogglePause}
-                          className="inline-flex items-center gap-2 rounded-lg bg-yellow-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-900 transition hover:bg-yellow-400"
-                        >
+              {/* Token Management - Owner Only */}
+              {isOwner && (
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden">
+                  <button
+                    onClick={() => toggleSection("token")}
+                    className="flex w-full items-center justify-between p-6 text-left"
+                  >
+                    <h3 className="text-lg font-semibold flex items-center gap-3">
+                      <Shield className="text-purple-400" size={20} /> Token
+                      Management
+                    </h3>
+                    {expandedSections.token ? (
+                      <ChevronUp size={20} className="text-gray-400" />
+                    ) : (
+                      <ChevronDown size={20} className="text-gray-400" />
+                    )}
+                  </button>
+                  {expandedSections.token && (
+                    <div className="space-y-4 px-6 pb-6">
+                      <div className="rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                          <div>
+                            <h4 className="text-base font-semibold text-yellow-100">
+                              Contract Pause Control
+                            </h4>
+                            <p className="text-xs text-yellow-100/80">
+                              Toggle the contract&apos;s paused state. Transfers
+                              are blocked while paused.
+                            </p>
+                          </div>
                           {pausedValue ? (
-                            <Play size={16} />
+                            <button
+                              onClick={handleTogglePause}
+                              className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-900 transition hover:bg-green-400"
+                            >
+                              <Play size={16} />
+                              Unpause Contract
+                            </button>
                           ) : (
-                            <Pause size={16} />
+                            <button
+                              onClick={handleTogglePause}
+                              className="inline-flex items-center gap-2 rounded-lg bg-yellow-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-900 transition hover:bg-yellow-400"
+                            >
+                              <Pause size={16} />
+                              Pause Contract
+                            </button>
                           )}
-                          {pausedValue ? "Unpause Contract" : "Pause Contract"}
-                        </button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <form
+                          onSubmit={handleBlacklist}
+                          className="space-y-3 rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-red-100"
+                        >
+                          <h4 className="text-base font-semibold text-red-100">
+                            Owner Blacklist
+                          </h4>
+                          <input
+                            value={blacklistAddress}
+                            onChange={(event) =>
+                              setBlacklistAddress(event.target.value)
+                            }
+                            placeholder="Wallet to blacklist"
+                            className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400/80"
+                          />
+                          <button
+                            type="submit"
+                            className="w-full rounded-lg bg-gradient-to-r from-red-500 to-rose-600 py-2.5 text-sm font-semibold text-white transition hover:from-red-600 hover:to-rose-700"
+                          >
+                            Blacklist Wallet
+                          </button>
+                        </form>
+                        <form
+                          onSubmit={handleUnblacklist}
+                          className="space-y-3 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-emerald-100"
+                        >
+                          <h4 className="text-base font-semibold text-emerald-100">
+                            Owner Unblacklist
+                          </h4>
+                          <input
+                            value={unblacklistAddress}
+                            onChange={(event) =>
+                              setUnblacklistAddress(event.target.value)
+                            }
+                            placeholder="Wallet to unblacklist"
+                            className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-400/80"
+                          />
+                          <button
+                            type="submit"
+                            className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.02] hover:from-emerald-600 hover:to-green-700"
+                          >
+                            Unblacklist Wallet
+                          </button>
+                        </form>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <form
-                        onSubmit={handleBlacklist}
-                        className="space-y-3 rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-red-100"
-                      >
-                        <h4 className="text-base font-semibold text-red-100">
-                          Owner Blacklist
-                        </h4>
-                        <input
-                          value={blacklistAddress}
-                          onChange={(event) =>
-                            setBlacklistAddress(event.target.value)
-                          }
-                          placeholder="Wallet to blacklist"
-                          className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400/80"
-                        />
-                        <button
-                          type="submit"
-                          className="w-full rounded-lg bg-gradient-to-r from-red-500 to-rose-600 py-2.5 text-sm font-semibold text-white transition hover:from-red-600 hover:to-rose-700"
-                        >
-                          Blacklist Wallet
-                        </button>
-                      </form>
-                      <form
-                        onSubmit={handleUnblacklist}
-                        className="space-y-3 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-emerald-100"
-                      >
-                        <h4 className="text-base font-semibold text-emerald-100">
-                          Owner Unblacklist
-                        </h4>
-                        <input
-                          value={unblacklistAddress}
-                          onChange={(event) =>
-                            setUnblacklistAddress(event.target.value)
-                          }
-                          placeholder="Wallet to unblacklist"
-                          className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-400/80"
-                        />
-                        <button
-                          type="submit"
-                          className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.02] hover:from-emerald-600 hover:to-green-700"
-                        >
-                          Unblacklist Wallet
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
