@@ -199,7 +199,7 @@ export default function App() {
       return;
     }
     if (mintToSelf && !address) {
-      pushToast("Connect your wallet to mint to yourself.", "warning");
+      showWarning("Connect your wallet to mint to yourself.");
       return;
     }
 
@@ -262,15 +262,14 @@ export default function App() {
       return;
     }
     if (redeemToSelf && !address) {
-      pushToast("Connect your wallet to redeem from yourself.", "warning");
+      showWarning("Connect your wallet to redeem from yourself.");
       return;
     }
     // Note: Contract's redeem function always redeems from msg.sender
     // The address field is informational - user must be connected with that wallet
     if (destination.toLowerCase() !== address?.toLowerCase()) {
-      pushToast(
-        "You can only redeem tokens from your connected wallet address.",
-        "warning"
+      showWarning(
+        "You can only redeem tokens from your connected wallet address."
       );
       return;
     }
