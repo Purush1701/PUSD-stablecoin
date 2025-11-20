@@ -17,21 +17,25 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 31337,
     },
-    // Sepolia testnet
-    sepolia: {
-      url: process.env.SEPOLIA_RPC_URL,
-      accounts: [
-        process.env.PRIVATE_KEY,
-        process.env.TEST_WALLET_2,
-        process.env.TEST_WALLET_3,
-      ].filter(Boolean) as string[],
-      chainId: 11155111,
-    },
-    // Mainnet (for forking/testing)
-    mainnet: {
-      url: process.env.MAINNET_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-    },
+    // Sepolia testnet (only if RPC URL is provided)
+    ...(process.env.SEPOLIA_RPC_URL && {
+      sepolia: {
+        url: process.env.SEPOLIA_RPC_URL,
+        accounts: [
+          process.env.PRIVATE_KEY,
+          process.env.TEST_WALLET_2,
+          process.env.TEST_WALLET_3,
+        ].filter(Boolean) as string[],
+        chainId: 11155111,
+      },
+    }),
+    // Mainnet (for forking/testing, only if RPC URL is provided)
+    ...(process.env.MAINNET_RPC_URL && {
+      mainnet: {
+        url: process.env.MAINNET_RPC_URL,
+        accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      },
+    }),
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY || "",
