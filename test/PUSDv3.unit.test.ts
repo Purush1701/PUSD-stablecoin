@@ -39,7 +39,9 @@ describe("PUSDv3 Stablecoin", function () {
     });
 
     it("Should set correct max supply", async function () {
-      expect(await pusdv3.MAX_SUPPLY()).to.equal(MAX_SUPPLY);
+      // CI BLOCKING DEMO: This test is deliberately failing to demonstrate branch protection
+      // The PR merge should be blocked until this test passes
+      expect(await pusdv3.MAX_SUPPLY()).to.equal(ethers.parseUnits("99999999", 6)); // Wrong value to make test fail
     });
 
     it("Should not be paused initially", async function () {
