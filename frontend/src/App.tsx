@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { createPortal } from "react-dom";
 import {
   useAccount,
   useReadContracts,
@@ -23,6 +24,7 @@ import {
   Wallet,
   Shield,
   Copy,
+  Clock,
 } from "lucide-react";
 
 const DECIMALS = 6;
@@ -95,7 +97,9 @@ export default function App() {
     message: string;
     variant: "success" | "error" | "warning";
   } | null>(null);
+  const [toastTimeRemaining, setToastTimeRemaining] = useState<number>(15);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
@@ -108,6 +112,9 @@ export default function App() {
     return () => {
       if (toastTimeoutRef.current) {
         clearTimeout(toastTimeoutRef.current);
+      }
+      if (toastIntervalRef.current) {
+        clearInterval(toastIntervalRef.current);
       }
     };
   }, []);
@@ -154,10 +161,34 @@ export default function App() {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
     }
+    if (toastIntervalRef.current) {
+      clearInterval(toastIntervalRef.current);
+    }
     // Format all messages in case they contain contract error patterns
     const formattedMessage = formatMessage(message);
     setToast({ message: formattedMessage, variant });
-    toastTimeoutRef.current = setTimeout(() => setToast(null), 15000);
+    setToastTimeRemaining(15);
+
+    // Update countdown every second
+    toastIntervalRef.current = setInterval(() => {
+      setToastTimeRemaining((prev) => {
+        if (prev <= 1) {
+          if (toastIntervalRef.current) {
+            clearInterval(toastIntervalRef.current);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+      setToastTimeRemaining(15);
+      if (toastIntervalRef.current) {
+        clearInterval(toastIntervalRef.current);
+      }
+    }, 15000);
   };
 
   const showSuccess = (message: string) => pushToast(message, "success");
@@ -377,42 +408,90 @@ export default function App() {
 
   return (
     <>
-      {toast && (
-        <div
-          className={`fixed right-6 top-6 z-50 flex items-start gap-3 rounded-2xl border px-5 py-4 text-sm font-medium shadow-lg backdrop-blur ${
-            toastStyleMap[toast.variant]
-          }`}
-          style={{
-            maxWidth: "28rem",
-            width: "auto",
-            minWidth: "20rem",
-            wordWrap: "break-word",
-            overflowWrap: "anywhere",
-          }}
-        >
-          <span
-            className="flex-1 break-words whitespace-pre-line"
+      {toast &&
+        createPortal(
+          <div
+            className={`fixed right-6 top-6 z-[9999] rounded-xl border shadow-2xl backdrop-blur-md ${
+              toastStyleMap[toast.variant]
+            }`}
             style={{
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
+              maxWidth: "32rem",
+              width: "auto",
+              minWidth: "24rem",
+              position: "fixed",
+              top: "1.5rem",
+              right: "1.5rem",
             }}
           >
-            {toast.message}
-          </span>
-          <button
-            onClick={() => {
-              if (toastTimeoutRef.current) {
-                clearTimeout(toastTimeoutRef.current);
-              }
-              setToast(null);
-            }}
-            className="text-white/60 transition hover:text-white/90 flex-shrink-0 mt-0.5"
-            aria-label="Dismiss notification"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
+            {/* Message Content */}
+            <div className="px-4 pt-3.5 pb-3.5 pr-14">
+              <div
+                className="break-words whitespace-pre-line text-sm leading-relaxed"
+                style={{
+                  wordBreak: "break-word",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {toast.message}
+              </div>
+            </div>
+
+            {/* Circular Timer with Dismiss Icon Inside - Top Right Corner */}
+            <div className="absolute top-3 right-3 flex-shrink-0">
+              <button
+                onClick={() => {
+                  if (toastTimeoutRef.current) {
+                    clearTimeout(toastTimeoutRef.current);
+                  }
+                  if (toastIntervalRef.current) {
+                    clearInterval(toastIntervalRef.current);
+                  }
+                  setToast(null);
+                  setToastTimeRemaining(15);
+                }}
+                className="relative w-7 h-7 flex items-center justify-center group"
+                aria-label="Dismiss notification"
+              >
+                <svg
+                  className="w-7 h-7 transform -rotate-90 absolute inset-0"
+                  viewBox="0 0 28 28"
+                >
+                  {/* Background circle */}
+                  <circle
+                    cx="14"
+                    cy="14"
+                    r="12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-white/10"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="14"
+                    cy="14"
+                    r="12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    className="text-white/50 transition-all duration-1000 ease-linear group-hover:text-white/70"
+                    strokeDasharray={`${2 * Math.PI * 12}`}
+                    strokeDashoffset={`${
+                      2 * Math.PI * 12 * (1 - toastTimeRemaining / 15)
+                    }`}
+                  />
+                </svg>
+                {/* Dismiss icon in center */}
+                <X
+                  size={12}
+                  className="text-white/70 group-hover:text-white transition-colors relative z-10"
+                />
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6 text-white">
         <div className="w-full max-w-2xl">
           <div className="mb-10">
@@ -802,14 +881,20 @@ export default function App() {
             </div>
           )}
 
-          <footer className="mt-12 text-center text-sm text-gray-400">
-            Built by Purush •{" "}
-            <a
-              href="https://github.com/Purush1701/PUSD-stablecoin"
-              className="underline hover:text-white transition"
-            >
-              GitHub
-            </a>
+          <footer className="mt-16 mb-8 text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
+              <span className="text-base font-medium text-gray-300">
+                Built by{" "}
+                <span className="text-white font-semibold">Purush</span>
+              </span>
+              <span className="text-gray-500">•</span>
+              <a
+                href="https://github.com/Purush1701/PUSD-stablecoin"
+                className="text-base font-medium text-purple-400 hover:text-purple-300 underline decoration-purple-400/50 hover:decoration-purple-300 transition-all"
+              >
+                GitHub
+              </a>
+            </div>
           </footer>
         </div>
       </div>

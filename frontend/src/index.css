@@ -16,3 +16,35 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+/* Custom number input spinner styling */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Style webkit spinner - remove box background, keep white arrows */
+input[type="number"]::-webkit-inner-spin-button {
+  opacity: 1;
+  height: 100%;
+  width: 20px;
+  cursor: pointer;
+  background: transparent !important;
+  border: none !important;
+  margin: 0;
+  padding: 0 8px 0 4px;
+  filter: brightness(0) invert(1);
+  opacity: 0.6;
+}
+
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0;
+}
+
+input[type="number"]:hover::-webkit-inner-spin-button {
+  opacity: 0.8;
+}
+
+input[type="number"]:focus::-webkit-inner-spin-button {
+  opacity: 1;
+}
