@@ -1,3 +1,5 @@
+// CI/CD Test: This commit includes a deliberately failing test to verify the GitHub Actions workflow
+// correctly blocks merges/pushes when tests fail. The test "Should have 6 decimals" is modified to fail.
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { PUSDv3 } from "../typechain-types";
@@ -27,7 +29,8 @@ describe("PUSDv3 Stablecoin", function () {
     });
 
     it("Should have 6 decimals", async function () {
-      expect(await pusdv3.decimals()).to.equal(6);
+      // DELIBERATE FAILURE FOR CI TESTING - This test will fail to verify CI pipeline blocks on test failures
+      expect(await pusdv3.decimals()).to.equal(7); // Changed from 6 to 7 to make test fail
     });
 
     it("Should mint initial supply to owner", async function () {
