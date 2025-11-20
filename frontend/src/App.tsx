@@ -135,6 +135,14 @@ export default function App() {
     }
   }, [redeemToSelf, address]);
 
+  // For non-owners, always redeem from their own wallet
+  useEffect(() => {
+    if (!isOwner && isConnected) {
+      setRedeemToSelf(true);
+      setRedeemAddress(address ?? "");
+    }
+  }, [isOwner, isConnected, address]);
+
   const showSuccess = (message: string) => pushToast(message, "success");
   const showWarning = (message: string) => pushToast(message, "warning");
   const toastStyleMap: Record<"success" | "error" | "warning", string> = {
@@ -542,7 +550,7 @@ export default function App() {
                           placeholder="Amount to mint"
                           type="number"
                           min="0"
-                          step="0.000001"
+                          step="1"
                           className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                         <button
@@ -592,7 +600,7 @@ export default function App() {
                         placeholder="Amount to transfer"
                         type="number"
                         min="0"
-                        step="0.000001"
+                        step="1"
                         className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                       />
                       <button
@@ -625,33 +633,35 @@ export default function App() {
                 {expandedSections.burn && (
                   <div className="px-6 pb-6">
                     <form onSubmit={handleBurn} className="space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <label className="flex items-center gap-2 text-xs font-medium text-purple-100">
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-white/30 bg-black/40"
-                            checked={redeemToSelf}
-                            onChange={(event) =>
-                              setRedeemToSelf(event.target.checked)
-                            }
-                          />
-                          Redeem from connected wallet
-                        </label>
-                        {redeemToSelf && address && (
-                          <span className="flex items-center gap-1 text-xs text-purple-200">
-                            <Wallet size={14} />
-                            {formatAddress(address)}
-                          </span>
-                        )}
-                      </div>
+                      {isOwner && (
+                        <div className="flex items-center justify-between gap-3">
+                          <label className="flex items-center gap-2 text-xs font-medium text-purple-100">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-white/30 bg-black/40"
+                              checked={redeemToSelf}
+                              onChange={(event) =>
+                                setRedeemToSelf(event.target.checked)
+                              }
+                            />
+                            Redeem from connected wallet
+                          </label>
+                          {redeemToSelf && address && (
+                            <span className="flex items-center gap-1 text-xs text-purple-200">
+                              <Wallet size={14} />
+                              {formatAddress(address)}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <input
                         value={redeemToSelf ? address ?? "" : redeemAddress}
                         onChange={(event) =>
                           !redeemToSelf && setRedeemAddress(event.target.value)
                         }
                         placeholder="Wallet address to redeem from"
-                        disabled={redeemToSelf}
-                        className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!isOwner || redeemToSelf}
+                        className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-800/30"
                       />
                       <input
                         value={burnAmount}
@@ -659,7 +669,7 @@ export default function App() {
                         placeholder="Amount to burn"
                         type="number"
                         min="0"
-                        step="0.000001"
+                        step="1"
                         className="w-full rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                       />
                       <button

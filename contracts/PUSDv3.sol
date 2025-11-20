@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PUSDv3 is ERC20, Pausable, Ownable {
     mapping(address => bool) public blacklisted;
-    uint256 public constant MAX_SUPPLY = 100_000_000 * 10 ** 6; // 100M cap
+    uint256 public constant MAX_SUPPLY = 100_000_000_000_000;
 
     event Blacklisted(address indexed account);
     event Unblacklisted(address indexed account);
@@ -18,8 +18,8 @@ contract PUSDv3 is ERC20, Pausable, Ownable {
     }
 
     function mint(address to, uint256 amount) public onlyOwner {
-        require(!blacklisted[to], "Recipient blacklisted");
-        require(totalSupply() + amount <= MAX_SUPPLY, "Exceeds max supply");
+        uint256 currentSupply = totalSupply();
+        require(currentSupply + amount <= MAX_SUPPLY, "Exceeds max supply");
         _mint(to, amount);
     }
 

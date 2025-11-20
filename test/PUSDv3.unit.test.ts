@@ -8,13 +8,12 @@ describe("PUSDv3 Stablecoin", function () {
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
   let addr2: SignerWithAddress;
-  let addr3: SignerWithAddress;
 
   const INITIAL_SUPPLY = ethers.parseUnits("1000000", 6); // 1M PUSD
   const MAX_SUPPLY = ethers.parseUnits("100000000", 6); // 100M PUSD
 
   beforeEach(async function () {
-    [owner, addr1, addr2, addr3] = await ethers.getSigners();
+    [owner, addr1, addr2] = await ethers.getSigners();
 
     const PUSDv3Factory = await ethers.getContractFactory("PUSDv3");
     pusdv3 = (await PUSDv3Factory.deploy()) as unknown as PUSDv3;
@@ -378,6 +377,301 @@ describe("PUSDv3 Stablecoin", function () {
       await pusdv3.pause();
       await pusdv3.unpause();
       expect(await pusdv3.paused()).to.be.false;
+    });
+  });
+
+  describe("Negative Test Cases", function () {
+    describe("Pause/Unpause Access Control", function () {
+      it("Should not allow non-owner to pause the contract", async function () {
+        await expect(pusdv3.connect(addr1).pause()).to.be.reverted;
+      });
+
+      it("Should not allow non-owner to unpause the contract", async function () {
+        await pusdv3.pause();
+        await expect(pusdv3.connect(addr1).unpause()).to.be.reverted;
+        await pusdv3.unpause(); // Cleanup
+      });
+    });
+
+    describe("Operations When Contract is Paused", function () {
+      it("Should block owner from performing mint, transfer, and redeem when paused", async function () {
+        await pusdv3.pause();
+        expect(await pusdv3.paused()).to.be.true;
+
+        const mintAmount = ethers.parseUnits("100", 6);
+        const transferAmount = ethers.parseUnits("10", 6);
+        const redeemAmount = ethers.parseUnits("5", 6);
+
+        // Owner should not be able to mint when paused
+        await expect(
+          pusdv3.mint(owner.address, mintAmount)
+        ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
+
+        // Owner should not be able to transfer when paused
+        await expect(
+          pusdv3.transfer(addr1.address, transferAmount)
+        ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
+
+        // Owner should not be able to redeem when paused
+        await expect(
+          pusdv3.redeem(redeemAmount, "USD")
+        ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
+
+        // Cleanup: unpause
+        await pusdv3.unpause();
+      });
+
+      it("Should block users from performing transfer and redeem when paused", async function () {
+        // Give user some tokens first
+        const initialAmount = ethers.parseUnits("100", 6);
+        await pusdv3.transfer(addr1.address, initialAmount);
+
+        // Pause the contract
+        await pusdv3.pause();
+
+        const transferAmount = ethers.parseUnits("10", 6);
+        const redeemAmount = ethers.parseUnits("5", 6);
+
+        // User should not be able to transfer when paused
+        await expect(
+          pusdv3.connect(addr1).transfer(owner.address, transferAmount)
+        ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
+
+        // User should not be able to redeem when paused
+        await expect(
+          pusdv3.connect(addr1).redeem(redeemAmount, "USD")
+        ).to.be.revertedWithCustomError(pusdv3, "EnforcedPause");
+
+        // Cleanup: unpause
+        await pusdv3.unpause();
+      });
+    });
+
+    describe("Blacklisted Owner Operations", function () {
+      it("Should block blacklisted owner from performing token operations (mint, transfer, redeem)", async function () {
+        // Blacklist the owner
+        await pusdv3.blacklist(owner.address);
+        expect(await pusdv3.blacklisted(owner.address)).to.be.true;
+
+        const mintAmount = ethers.parseUnits("100", 6);
+        const transferAmount = ethers.parseUnits("10", 6);
+        const redeemAmount = ethers.parseUnits("5", 6);
+
+        // Owner should not be able to mint
+        await expect(pusdv3.mint(owner.address, mintAmount)).to.be.revertedWith(
+          "Recipient blacklisted"
+        );
+
+        // Owner should not be able to transfer
+        await expect(
+          pusdv3.transfer(addr1.address, transferAmount)
+        ).to.be.revertedWith("Sender blacklisted");
+
+        // Owner should not be able to redeem
+        await expect(pusdv3.redeem(redeemAmount, "USD")).to.be.revertedWith(
+          "Sender blacklisted"
+        );
+
+        // Cleanup: Owner can unblacklist themselves because unblacklist() only checks ownership
+        await pusdv3.unblacklist(owner.address);
+        expect(await pusdv3.blacklisted(owner.address)).to.be.false;
+      });
+
+      it("Should allow blacklisted owner to perform ownership functions (pause, unpause, blacklist, unblacklist)", async function () {
+        // Blacklist the owner
+        await pusdv3.blacklist(owner.address);
+        expect(await pusdv3.blacklisted(owner.address)).to.be.true;
+
+        // Owner should still be able to pause (only checks ownership, not blacklist)
+        const wasPaused = await pusdv3.paused();
+        if (!wasPaused) {
+          await pusdv3.pause();
+          expect(await pusdv3.paused()).to.be.true;
+          await pusdv3.unpause();
+        }
+
+        // Owner should still be able to blacklist/unblacklist (only checks ownership)
+        const wasBlacklisted = await pusdv3.blacklisted(addr1.address);
+        if (!wasBlacklisted) {
+          await pusdv3.blacklist(addr1.address);
+          expect(await pusdv3.blacklisted(addr1.address)).to.be.true;
+          await pusdv3.unblacklist(addr1.address);
+          expect(await pusdv3.blacklisted(addr1.address)).to.be.false;
+        }
+
+        // Cleanup: unblacklist owner
+        await pusdv3.unblacklist(owner.address);
+        expect(await pusdv3.blacklisted(owner.address)).to.be.false;
+      });
+
+      it("Should allow unblacklisted owner to perform all operations", async function () {
+        // First blacklist the owner
+        await pusdv3.blacklist(owner.address);
+
+        // Now unblacklist the owner
+        await pusdv3.unblacklist(owner.address);
+        expect(await pusdv3.blacklisted(owner.address)).to.be.false;
+
+        const mintAmount = ethers.parseUnits("100", 6);
+        const transferAmount = ethers.parseUnits("10", 6);
+        const redeemAmount = ethers.parseUnits("5", 6);
+
+        // Owner should be able to mint
+        const balanceBefore = await pusdv3.balanceOf(owner.address);
+        await pusdv3.mint(owner.address, mintAmount);
+        const balanceAfter = await pusdv3.balanceOf(owner.address);
+        expect(balanceAfter).to.equal(balanceBefore + mintAmount);
+
+        // Owner should be able to transfer
+        const ownerBalanceBefore = await pusdv3.balanceOf(owner.address);
+        const userBalanceBefore = await pusdv3.balanceOf(addr1.address);
+        await pusdv3.transfer(addr1.address, transferAmount);
+        const ownerBalanceAfter = await pusdv3.balanceOf(owner.address);
+        const userBalanceAfter = await pusdv3.balanceOf(addr1.address);
+        expect(ownerBalanceAfter).to.equal(ownerBalanceBefore - transferAmount);
+        expect(userBalanceAfter).to.equal(userBalanceBefore + transferAmount);
+
+        // Owner should be able to redeem
+        const ownerBalanceBefore2 = await pusdv3.balanceOf(owner.address);
+        const totalSupplyBefore = await pusdv3.totalSupply();
+        await pusdv3.redeem(redeemAmount, "USD");
+        const ownerBalanceAfter2 = await pusdv3.balanceOf(owner.address);
+        const totalSupplyAfter = await pusdv3.totalSupply();
+        expect(ownerBalanceAfter2).to.equal(ownerBalanceBefore2 - redeemAmount);
+        expect(totalSupplyAfter).to.equal(totalSupplyBefore - redeemAmount);
+
+        // Owner should be able to pause/unpause
+        await pusdv3.pause();
+        expect(await pusdv3.paused()).to.be.true;
+        await pusdv3.unpause();
+        expect(await pusdv3.paused()).to.be.false;
+
+        // Owner should be able to blacklist/unblacklist
+        await pusdv3.blacklist(addr1.address);
+        expect(await pusdv3.blacklisted(addr1.address)).to.be.true;
+        await pusdv3.unblacklist(addr1.address);
+        expect(await pusdv3.blacklisted(addr1.address)).to.be.false;
+      });
+    });
+
+    describe("Blacklisted User Operations", function () {
+      it("Should block blacklisted users from transferring tokens", async function () {
+        // First, send some tokens to test address
+        const amount = ethers.parseUnits("10", 6);
+        await pusdv3.transfer(addr1.address, amount);
+
+        // Blacklist the address
+        await pusdv3.blacklist(addr1.address);
+
+        // Try to transfer from blacklisted address
+        await expect(
+          pusdv3
+            .connect(addr1)
+            .transfer(owner.address, ethers.parseUnits("1", 6))
+        ).to.be.revertedWith("Sender blacklisted");
+
+        // Clean up
+        await pusdv3.unblacklist(addr1.address);
+      });
+
+      it("Should block blacklisted users from redeeming tokens", async function () {
+        // Give user1 some tokens
+        const initialAmount = ethers.parseUnits("100", 6);
+        await pusdv3.transfer(addr1.address, initialAmount);
+
+        // Blacklist user1
+        await pusdv3.blacklist(addr1.address);
+        expect(await pusdv3.blacklisted(addr1.address)).to.be.true;
+
+        const redeemAmount = ethers.parseUnits("5", 6);
+
+        // User1 should not be able to redeem
+        await expect(
+          pusdv3.connect(addr1).redeem(redeemAmount, "USD")
+        ).to.be.revertedWith("Sender blacklisted");
+
+        // Cleanup: unblacklist user1
+        await pusdv3.unblacklist(addr1.address);
+      });
+
+      it("Should allow unblacklisted users to transfer and redeem tokens", async function () {
+        // Ensure user1 is blacklisted first
+        await pusdv3.blacklist(addr1.address);
+
+        // Unblacklist user1
+        await pusdv3.unblacklist(addr1.address);
+        expect(await pusdv3.blacklisted(addr1.address)).to.be.false;
+
+        // Give user1 some tokens
+        const initialAmount = ethers.parseUnits("100", 6);
+        await pusdv3.transfer(addr1.address, initialAmount);
+
+        const transferAmount = ethers.parseUnits("10", 6);
+        const redeemAmount = ethers.parseUnits("5", 6);
+
+        // User1 should be able to transfer
+        const userBalanceBefore = await pusdv3.balanceOf(addr1.address);
+        const ownerBalanceBefore = await pusdv3.balanceOf(owner.address);
+        await pusdv3.connect(addr1).transfer(owner.address, transferAmount);
+        const userBalanceAfter = await pusdv3.balanceOf(addr1.address);
+        const ownerBalanceAfter = await pusdv3.balanceOf(owner.address);
+        expect(userBalanceAfter).to.equal(userBalanceBefore - transferAmount);
+        expect(ownerBalanceAfter).to.equal(ownerBalanceBefore + transferAmount);
+
+        // User1 should be able to redeem
+        const userBalanceBefore2 = await pusdv3.balanceOf(addr1.address);
+        const totalSupplyBefore = await pusdv3.totalSupply();
+        await pusdv3.connect(addr1).redeem(redeemAmount, "USD");
+        const userBalanceAfter2 = await pusdv3.balanceOf(addr1.address);
+        const totalSupplyAfter = await pusdv3.totalSupply();
+        expect(userBalanceAfter2).to.equal(userBalanceBefore2 - redeemAmount);
+        expect(totalSupplyAfter).to.equal(totalSupplyBefore - redeemAmount);
+      });
+    });
+
+    describe("Operations TO Blacklisted Addresses", function () {
+      it("Should block transfers to blacklisted addresses from any sender", async function () {
+        // Ensure user1 is blacklisted
+        await pusdv3.blacklist(addr1.address);
+
+        // Ensure user2 is not blacklisted
+        if (await pusdv3.blacklisted(addr2.address)) {
+          await pusdv3.unblacklist(addr2.address);
+        }
+
+        const transferAmount = ethers.parseUnits("10", 6);
+
+        // Owner should not be able to transfer TO blacklisted user1
+        await expect(
+          pusdv3.transfer(addr1.address, transferAmount)
+        ).to.be.revertedWith("Recipient blacklisted");
+
+        // Give user2 some tokens first
+        await pusdv3.transfer(addr2.address, transferAmount);
+
+        // User2 should not be able to transfer TO blacklisted user1
+        await expect(
+          pusdv3.connect(addr2).transfer(addr1.address, transferAmount)
+        ).to.be.revertedWith("Recipient blacklisted");
+
+        // Cleanup: unblacklist user1
+        await pusdv3.unblacklist(addr1.address);
+      });
+
+      it("Should block minting to blacklisted addresses", async function () {
+        // Ensure user1 is blacklisted
+        await pusdv3.blacklist(addr1.address);
+
+        const mintAmount = ethers.parseUnits("100", 6);
+
+        // Owner should not be able to mint TO blacklisted user1
+        await expect(pusdv3.mint(addr1.address, mintAmount)).to.be.revertedWith(
+          "Recipient blacklisted"
+        );
+
+        // Cleanup: unblacklist user1
+        await pusdv3.unblacklist(addr1.address);
+      });
     });
   });
 });
