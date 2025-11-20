@@ -104,17 +104,6 @@ export default function App() {
     }));
   };
 
-  const pushToast = (
-    message: string,
-    variant: "success" | "error" | "warning"
-  ) => {
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-    }
-    setToast({ message, variant });
-    toastTimeoutRef.current = setTimeout(() => setToast(null), 5000);
-  };
-
   useEffect(() => {
     return () => {
       if (toastTimeoutRef.current) {
@@ -143,8 +132,44 @@ export default function App() {
     }
   }, [isOwner, isConnected, address]);
 
+  const formatMessage = (message: string): string => {
+    // Format contract error messages with proper line breaks
+    // Works for error, warning, and success messages
+    let formatted = message;
+
+    // Add line breaks before key sections
+    formatted = formatted.replace(/\s+Contract Call:/g, "\n\nContract Call:");
+    formatted = formatted.replace(/\s+function:/g, "\n\nfunction:");
+    formatted = formatted.replace(/\s+args:/g, " args:");
+    formatted = formatted.replace(/\s+sender:/g, "\n\nsender:");
+    formatted = formatted.replace(/\s+Docs:/g, "\n\nDocs:");
+
+    return formatted;
+  };
+
+  const pushToast = (
+    message: string,
+    variant: "success" | "error" | "warning"
+  ) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    // Format all messages in case they contain contract error patterns
+    const formattedMessage = formatMessage(message);
+    setToast({ message: formattedMessage, variant });
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 15000);
+  };
+
   const showSuccess = (message: string) => pushToast(message, "success");
   const showWarning = (message: string) => pushToast(message, "warning");
+  const showError = (error: unknown) => {
+    const fallback = "Transaction failed. Check the console for details.";
+    const message =
+      error instanceof Error ? error.message || fallback : fallback;
+    pushToast(message, "error");
+    console.error(error);
+  };
+
   const toastStyleMap: Record<"success" | "error" | "warning", string> = {
     success:
       "border-emerald-400/70 bg-emerald-500/15 text-emerald-100 shadow-emerald-500/20",
@@ -163,14 +188,6 @@ export default function App() {
     } catch (error) {
       showError(error);
     }
-  };
-
-  const showError = (error: unknown) => {
-    const fallback = "Transaction failed. Check the console for details.";
-    const message =
-      error instanceof Error ? error.message || fallback : fallback;
-    pushToast(message, "error");
-    console.error(error);
   };
 
   const formatPUSD = (value: bigint | undefined) =>
@@ -374,7 +391,7 @@ export default function App() {
           }}
         >
           <span
-            className="flex-1 break-words"
+            className="flex-1 break-words whitespace-pre-line"
             style={{
               wordBreak: "break-word",
               overflowWrap: "anywhere",
