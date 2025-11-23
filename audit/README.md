@@ -2,10 +2,10 @@
 
 Latest run (main branch): **0 High | 0 Medium | 0 Low | 5 Informational**
 
-- [slither-checklist-latest.md](slither-checklist-latest.md) – Human-readable checklist  
-- [slither-report-latest.json](slither-report-latest.json) – Full machine-readable report  
+- [slither-checklist-latest.md](slither-checklist-latest.md) – Human-readable checklist
+- [slither-report-latest.json](slither-report-latest.json) – Full machine-readable report
 
-Runs automatically on every push via GitHub Actions.  
+Runs automatically on every push via GitHub Actions.
 
 Zero High/Medium severity since first commit.
 
@@ -20,6 +20,7 @@ npm run security:slither
 ```
 
 This will create:
+
 - `slither-checklist.md` - Human-readable checklist report (in root, gitignored)
 - `slither-report.json` - Machine-readable JSON report (in root, gitignored)
 - Latest reports saved to `audit/` folder
