@@ -1,0 +1,157 @@
+name: Slither Security Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  slither:
+    name: Run Slither Static Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Slither
+        run: |
+          pip install slither-analyzer
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile contracts
+        run: npm run compile
+
+      - name: Run Slither with checklist
+        id: slither_checklist
+        continue-on-error: true
+        run: |
+          slither contracts/ --checklist > slither-checklist.md 2>&1 || true
+          echo "=== Slither Checklist Output ==="
+          cat slither-checklist.md || echo "No checklist generated"
+
+      - name: Run Slither JSON report
+        id: slither_json
+        continue-on-error: true
+        run: |
+          slither contracts/ --json slither-report.json 2>&1 || true
+          if [ -f slither-report.json ]; then
+            echo "Slither JSON report generated successfully"
+          else
+            echo "Warning: Slither JSON report not generated"
+          fi
+
+      - name: Parse findings and check severity
+        id: check_severity
+        run: |
+          if [ -f slither-report.json ]; then
+            # Extract High and Medium findings count from Slither JSON
+            HIGH_COUNT=$(python3 << 'EOF'
+import json
+import sys
+
+try:
+    with open('slither-report.json', 'r') as f:
+        data = json.load(f)
+        
+    high = 0
+    medium = 0
+    
+    # Slither JSON structure: results.detectors array
+    if 'results' in data and 'detectors' in data['results']:
+        for detector in data['results']['detectors']:
+            impact = detector.get('impact', '').lower()
+            if impact == 'high':
+                high += 1
+            elif impact == 'medium':
+                medium += 1
+    
+    print(f'{high},{medium}')
+except json.JSONDecodeError as e:
+    print(f'JSON decode error: {e}', file=sys.stderr)
+    print('0,0')
+except Exception as e:
+    print(f'Error parsing Slither report: {e}', file=sys.stderr)
+    print('0,0')
+EOF
+            )
+            
+            HIGH=$(echo $HIGH_COUNT | cut -d',' -f1)
+            MEDIUM=$(echo $HIGH_COUNT | cut -d',' -f2)
+            
+            echo "high_count=$HIGH" >> $GITHUB_OUTPUT
+            echo "medium_count=$MEDIUM" >> $GITHUB_OUTPUT
+            echo "total_critical=$((HIGH + MEDIUM))" >> $GITHUB_OUTPUT
+            
+            echo ""
+            echo "🔍 Slither Analysis Results:"
+            echo "   High severity findings: $HIGH"
+            echo "   Medium severity findings: $MEDIUM"
+            echo "   Total critical findings: $((HIGH + MEDIUM))"
+            echo ""
+            
+            if [ $HIGH -gt 0 ] || [ $MEDIUM -gt 0 ]; then
+              echo "❌ Build failed: Found $HIGH High and $MEDIUM Medium severity issues"
+              echo "   Review the checklist and JSON report artifacts for details"
+              exit 1
+            else
+              echo "✅ Build passed: No High or Medium severity issues found"
+              exit 0
+            fi
+          else
+            echo "⚠️  Slither JSON report not generated"
+            echo "   This may indicate a compilation or Slither execution error"
+            echo "   Check the Slither checklist output above for details"
+            echo "high_count=0" >> $GITHUB_OUTPUT
+            echo "medium_count=0" >> $GITHUB_OUTPUT
+            echo "total_critical=0" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Upload Slither checklist
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slither-checklist
+          path: slither-checklist.md
+          retention-days: 90
+
+      - name: Upload Slither JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slither-json-report
+          path: slither-report.json
+          retention-days: 90
+
+      - name: Save report to audit folder
+        if: always()
+        run: |
+          mkdir -p audit
+          if [ -f slither-checklist.md ]; then
+            cp slither-checklist.md audit/slither-checklist-$(date +%Y%m%d-%H%M%S).md
+          fi
+          if [ -f slither-report.json ]; then
+            cp slither-report.json audit/slither-report-$(date +%Y%m%d-%H%M%S).json
+          fi
