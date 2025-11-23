@@ -8,6 +8,7 @@
 ![Tests](https://img.shields.io/badge/Tests-56%20Passing-brightgreen?style=flat-square)
 ![Audit](https://img.shields.io/badge/Audit-Remix%20100%25%20CLEAN-success?style=flat-square)
 [![Slither](https://github.com/Purush1701/PUSD-stablecoin/workflows/Slither%20Security%20Analysis/badge.svg)](https://github.com/Purush1701/PUSD-stablecoin/actions/workflows/slither-analysis.yml)
+[![Slither Clean](https://img.shields.io/badge/Slither-Clean-brightgreen)](./audit/slither-checklist-latest.md)
 [![Network](https://img.shields.io/badge/Network-Sepolia-blueviolet?style=flat-square)](https://sepolia.etherscan.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
