@@ -28,18 +28,21 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with comprehensive comp
 ## ✨ PUSD v3 Features
 
 ### 🔐 Core ERC-20 Functionality
+
 - **Full ERC-20 Compliance**: OpenZeppelin v5 implementation
 - **6 Decimal Precision**: Optimized for stablecoin operations
 - **Initial Supply**: 1M tokens minted on deployment
 - **Standard Operations**: Transfer, approve, transferFrom
 
 ### 💰 Token Management
+
 - **Minting**: Owner-controlled token creation with max supply enforcement
 - **Redeem & Burn**: Multi-currency redemption with automatic token burning
 - **Max Supply Cap**: Hard limit of 100M PUSD to prevent inflation
 - **Event Emissions**: Comprehensive event logging for off-chain tracking
 
 ### 🛡️ Security & Compliance
+
 - **Emergency Pause**: Owner can pause/unpause all token operations
 - **Blacklist System**: Block malicious addresses (SFC/HKMA compliance)
 - **Access Control**: Owner-only functions with OpenZeppelin Ownable
@@ -47,12 +50,14 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with comprehensive comp
 - **Blacklist Enforcement**: Blocks transfers from/to blacklisted addresses
 
 ### 🧪 Testing & Quality
+
 - **56 Comprehensive Tests**: Unit + integration test coverage
 - **Sepolia Integration Tests**: Real network validation
 - **Edge Case Coverage**: Zero transfers, multiple pause cycles, ownership transfers
 - **Negative Testing**: Access control, paused state, blacklist scenarios
 
 ### 🔍 Security Analysis
+
 - **Slither Clean**: Automated static analysis on every push/PR
 - **Zero Tolerance**: Build fails on High/Medium severity findings
 - **CI/CD Integration**: Automated security scanning in GitHub Actions
@@ -75,6 +80,7 @@ A production-grade ERC-20 stablecoin on Ethereum Sepolia with comprehensive comp
 ## 🛠️ Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 - Git
@@ -167,6 +173,7 @@ PUSD-stablecoin/
 ## 🔐 Security
 
 ### Security Features
+
 - ✅ Audited OpenZeppelin Contracts v5.0
 - ✅ 56 comprehensive tests (unit + integration)
 - ✅ Emergency pause/unpause controls
@@ -186,6 +193,7 @@ This project maintains **Slither clean** status with automated static analysis o
 The workflow enforces zero tolerance for High or Medium severity findings, ensuring production-ready security standards expected by HK regulated custodians.
 
 ### Security Considerations
+
 - ⚠️ **Testnet Deployment**: Not audited for mainnet use
 - 🔒 **Production**: Consider professional audit before mainnet deployment
 
@@ -194,9 +202,11 @@ The workflow enforces zero tolerance for High or Medium severity findings, ensur
 ## 📊 Version History
 
 ### Current Version: v3 (LIVE)
+
 **Contract**: [`0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5`](https://sepolia.etherscan.io/address/0xf7FdD5C9Af785Bfa07aDb69573e47289E23810C5)
 
 **Features**:
+
 - All v2 features (ERC-20, mint, redeem, multi-currency)
 - Emergency pause/unpause
 - Blacklist/unblacklist system
@@ -207,6 +217,7 @@ The workflow enforces zero tolerance for High or Medium severity findings, ensur
 ### Previous Versions
 
 #### Version 2 (Deprecated)
+
 **Contract**: [`0x251C...e622`](https://sepolia.etherscan.io/address/0x251C3d4b2F2FB744f2fFd179C4C455c2620fe622)
 
 - ERC-20 standard
@@ -215,6 +226,7 @@ The workflow enforces zero tolerance for High or Medium severity findings, ensur
 - Event emissions
 
 #### Version 1 (Deprecated)
+
 **Contract**: [`0x2c31...a75cc`](https://sepolia.etherscan.io/address/0x2c31a9a9147bee127fb3fb07d14406c0ba8a75cc)
 
 - Basic ERC-20 implementation

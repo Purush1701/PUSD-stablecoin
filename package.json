@@ -16,7 +16,7 @@
     "console": "hardhat console",
     "clean": "hardhat clean",
     "typechain": "hardhat typechain",
-    "security:slither": "slither contracts/ --checklist > slither-checklist.md && slither contracts/ --json slither-report.json"
+    "security:slither": "bash scripts/run-slither.sh"
   },
   "keywords": [
     "solidity",
