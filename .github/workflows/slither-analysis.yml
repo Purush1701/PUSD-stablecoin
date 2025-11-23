@@ -47,7 +47,7 @@ jobs:
         id: slither_checklist
         continue-on-error: true
         run: |
-          slither contracts/ --checklist > slither-checklist.md 2>&1 || true
+          slither . --compile-force-framework hardhat --checklist > slither-checklist.md 2>&1 || true
           echo "=== Slither Checklist Output ==="
           cat slither-checklist.md || echo "No checklist generated"
 
@@ -55,7 +55,7 @@ jobs:
         id: slither_json
         continue-on-error: true
         run: |
-          slither contracts/ --json slither-report.json 2>&1 || true
+          slither . --compile-force-framework hardhat --json slither-report.json 2>&1 || true
           if [ -f slither-report.json ]; then
             echo "Slither JSON report generated successfully"
           else
