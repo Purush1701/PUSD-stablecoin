@@ -16,19 +16,19 @@ mkdir -p "${ARCHIVE_DIR}"
 
 # Save latest reports (overwrite)
 if [ -f slither-checklist.md ]; then
-  cp slither-checklist.md audit/LATEST.md
+  cp slither-checklist.md audit/slither-checklist-latest.md
   cp slither-checklist.md "${ARCHIVE_DIR}/slither-checklist-${TIMESTAMP}.md"
-  echo "✅ Checklist saved to audit/LATEST.md and archived"
+  echo "✅ Checklist saved to audit/slither-checklist-latest.md and archived"
 fi
 
 if [ -f slither-report.json ]; then
-  cp slither-report.json audit/LATEST.json
+  cp slither-report.json audit/slither-report-latest.json
   cp slither-report.json "${ARCHIVE_DIR}/slither-report-${TIMESTAMP}.json"
-  echo "✅ JSON report saved to audit/LATEST.json and archived"
+  echo "✅ JSON report saved to audit/slither-report-latest.json and archived"
 fi
 
 echo ""
 echo "📁 Reports location:"
-echo "   Latest: audit/LATEST.md and audit/LATEST.json"
+echo "   Latest: audit/slither-checklist-latest.md and audit/slither-report-latest.json"
 echo "   Archive: audit/archive/${YEAR_MONTH}/"
 

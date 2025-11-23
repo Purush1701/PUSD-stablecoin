@@ -149,9 +149,16 @@ EOF
         if: always()
         run: |
           mkdir -p audit
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          YEAR_MONTH=$(date +%Y-%m)
+          ARCHIVE_DIR="audit/archive/${YEAR_MONTH}"
+          mkdir -p "${ARCHIVE_DIR}"
+          
           if [ -f slither-checklist.md ]; then
-            cp slither-checklist.md audit/slither-checklist-$(date +%Y%m%d-%H%M%S).md
+            cp slither-checklist.md audit/slither-checklist-latest.md
+            cp slither-checklist.md "${ARCHIVE_DIR}/slither-checklist-${TIMESTAMP}.md"
           fi
           if [ -f slither-report.json ]; then
-            cp slither-report.json audit/slither-report-$(date +%Y%m%d-%H%M%S).json
+            cp slither-report.json audit/slither-report-latest.json
+            cp slither-report.json "${ARCHIVE_DIR}/slither-report-${TIMESTAMP}.json"
           fi
