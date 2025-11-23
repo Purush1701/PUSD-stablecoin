@@ -47,7 +47,7 @@ jobs:
         id: slither_checklist
         continue-on-error: true
         run: |
-          slither contracts/ --checklist > slither-checklist.md 2>&1 || true
+          slither . --compile-force-framework hardhat --checklist > slither-checklist.md 2>&1 || true
           echo "=== Slither Checklist Output ==="
           cat slither-checklist.md || echo "No checklist generated"
 
@@ -55,7 +55,7 @@ jobs:
         id: slither_json
         continue-on-error: true
         run: |
-          slither contracts/ --json slither-report.json 2>&1 || true
+          slither . --compile-force-framework hardhat --json slither-report.json 2>&1 || true
           if [ -f slither-report.json ]; then
             echo "Slither JSON report generated successfully"
           else
@@ -67,36 +67,36 @@ jobs:
         run: |
           if [ -f slither-report.json ]; then
             # Extract High and Medium findings count from Slither JSON
-            HIGH_COUNT=$(python3 << 'EOF'
-import json
-import sys
+            python3 << 'PYTHON_SCRIPT' > /tmp/slither_counts.txt
+          import json
+          import sys
 
-try:
-    with open('slither-report.json', 'r') as f:
-        data = json.load(f)
-        
-    high = 0
-    medium = 0
-    
-    # Slither JSON structure: results.detectors array
-    if 'results' in data and 'detectors' in data['results']:
-        for detector in data['results']['detectors']:
-            impact = detector.get('impact', '').lower()
-            if impact == 'high':
-                high += 1
-            elif impact == 'medium':
-                medium += 1
-    
-    print(f'{high},{medium}')
-except json.JSONDecodeError as e:
-    print(f'JSON decode error: {e}', file=sys.stderr)
-    print('0,0')
-except Exception as e:
-    print(f'Error parsing Slither report: {e}', file=sys.stderr)
-    print('0,0')
-EOF
-            )
+          try:
+              with open('slither-report.json', 'r') as f:
+                  data = json.load(f)
+                  
+              high = 0
+              medium = 0
+              
+              # Slither JSON structure: results.detectors array
+              if 'results' in data and 'detectors' in data['results']:
+                  for detector in data['results']['detectors']:
+                      impact = detector.get('impact', '').lower()
+                      if impact == 'high':
+                          high += 1
+                      elif impact == 'medium':
+                          medium += 1
+              
+              print(f'{high},{medium}')
+          except json.JSONDecodeError as e:
+              print(f'JSON decode error: {e}', file=sys.stderr)
+              print('0,0')
+          except Exception as e:
+              print(f'Error parsing Slither report: {e}', file=sys.stderr)
+              print('0,0')
+          PYTHON_SCRIPT
             
+            HIGH_COUNT=$(cat /tmp/slither_counts.txt)
             HIGH=$(echo $HIGH_COUNT | cut -d',' -f1)
             MEDIUM=$(echo $HIGH_COUNT | cut -d',' -f2)
             
@@ -153,7 +153,7 @@ EOF
           YEAR_MONTH=$(date +%Y-%m)
           ARCHIVE_DIR="audit/archive/${YEAR_MONTH}"
           mkdir -p "${ARCHIVE_DIR}"
-          
+
           if [ -f slither-checklist.md ]; then
             cp slither-checklist.md audit/slither-checklist-latest.md
             cp slither-checklist.md "${ARCHIVE_DIR}/slither-checklist-${TIMESTAMP}.md"
