@@ -7,6 +7,7 @@
 [![Hardhat](https://img.shields.io/badge/Hardhat-TypeScript-green?style=flat-square)](https://hardhat.org/)
 ![Tests](https://img.shields.io/badge/Tests-44%20Passing-brightgreen?style=flat-square)
 ![Audit](https://img.shields.io/badge/Audit-Remix%20100%25%20CLEAN-success?style=flat-square)
+[![Slither](https://github.com/Purush1701/PUSD-stablecoin/workflows/Slither%20Security%20Analysis/badge.svg)](https://github.com/Purush1701/PUSD-stablecoin/actions/workflows/slither-analysis.yml)
 [![Network](https://img.shields.io/badge/Network-Sepolia-blueviolet?style=flat-square)](https://sepolia.etherscan.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -244,8 +245,19 @@ PUSD-stablecoin/
 - ✅ Blacklist functionality for compliance (v3)
 - ✅ Max supply cap to prevent inflation (v3)
 - ✅ Automatic gas balance validation for Sepolia tests
+- ✅ **Slither Static Analysis**: Automated security scanning on every push/PR (0 High/Medium findings required)
 - ⚠️ Testnet deployment - not audited for mainnet use
 - 🔒 Consider professional audit before production
+
+### Security: Slither Clean
+
+This project maintains **Slither clean** status with automated static analysis on every push and pull request. The CI/CD pipeline runs Slither and fails the build if any High or Medium severity findings are detected.
+
+- **Latest Report**: [View on GitHub Actions](https://github.com/Purush1701/PUSD-stablecoin/actions/workflows/slither-analysis.yml)
+- **Run Locally**: `npm run security:slither` (generates `slither-checklist.md` and `slither-report.json`)
+- **CI/CD Artifacts**: All security reports are automatically uploaded as downloadable artifacts (90-day retention) for compliance tracking
+
+The workflow analyzes all contracts in the `contracts/` directory and enforces zero tolerance for High or Medium severity findings, ensuring production-ready security standards expected by HK regulated custodians.
 
 ---
 

@@ -30,3 +30,8 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+
+# Slither analysis reports (generated locally)
+slither-checklist.md
+slither-report.json
+.slither/
